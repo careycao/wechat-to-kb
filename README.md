@@ -44,6 +44,24 @@ B 站视频、小红书笔记、RSS 订阅……碎片信息越积越多，却�
 
 AI 助手会自动判断文章分类、选择对应知识库，并返回保存结果（标题、分类、核心关键词）。
 
+**原理**：AI 助手通过 exec 工具直接调用 `run.sh`，无需终端介入。无 TTY 环境下（AI 后台执行）自动选得分最高的知识库，无需人工确认。
+
+#### 配置 AI 助手
+
+在你的 AI 助手的工具描述文件（如 OpenClaw 的 `TOOLS.md`、Cursor 的 `AGENTS.md`）中加入以下条目：
+
+```markdown
+**kb_collector（知识库采集）**
+- 用户说「保存到知识库 <URL>」时，直接 exec 执行：
+  `/bin/bash ~/path/to/wechat-to-kb/kb_collector/run.sh "<URL>"`
+- 指定知识库：加 `--kb ai` / `engineering` / `management` / `pm`
+- 批量保存：`run.sh -f urls.txt`
+- 无 TTY 下自动非交互，无需加 `-n`
+- 保存成功后简短确认（标题 + 知识库名）即可
+```
+
+将 `~/path/to/wechat-to-kb` 替换为你的实际安装路径。
+
 ---
 
 ### 方式二：终端命令行
