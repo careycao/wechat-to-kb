@@ -459,8 +459,15 @@ async def run_urls(
             changed_kbs.add(kb_key)
 
             prefixed = kb.raw_to_prefixed.get(category, category)
-            print(f"\n✓ 已存入 {kb.name} / {prefixed}")
-            print(f"  标题：{title[:60]}\n")
+            keywords = extract_keywords_for_index(plain_text)
+            save_path = f"~/knowledge_base/{kb.name}/{prefixed}/"
+            print(f"\n已保存完成 ✅")
+            print(f"文章信息：")
+            print(f"• 标题： {title[:60]}")
+            print(f"• 知识库： {kb.name}")
+            print(f"• 分类： {prefixed}")
+            print(f"• 核心关键词： {keywords}")
+            print(f"已同步更新知识库索引。后续可以在 {save_path} 下找到原文 HTML/TXT 版本。\n")
 
         except Exception:
             logger.exception("处理出错: %s", url)
