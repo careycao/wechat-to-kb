@@ -73,6 +73,57 @@ cd kb_collector
 
 ---
 
+## 接入 OpenClaw
+
+如果你使用 [OpenClaw](https://openclaw.ai)，按以下步骤配置后，可以直接在对话框说"帮我保存这个链接"，无需打开终端。
+
+### 1. clone 到 OpenClaw 目录
+
+```bash
+git clone https://github.com/careycao/wechat-to-kb.git ~/.openclaw/wechat-to-kb
+```
+
+### 2. 配置知识库
+
+```bash
+cp ~/.openclaw/wechat-to-kb/kb_collector/kb_config.example.py \
+   ~/.openclaw/wechat-to-kb/kb_collector/kb_config.py
+# 编辑 kb_config.py，修改知识库名称、分类和关键词
+```
+
+### 3. 初始化环境 + 微信登录
+
+```bash
+cd ~/.openclaw/wechat-to-kb/kb_collector
+./run.sh "https://mp.weixin.qq.com/s/任意一篇公众号文章"
+# 首次运行会自动创建 .venv 并安装依赖，同时弹出浏览器扫码登录微信
+# 登录态自动保存，之后无需重复登录
+```
+
+### 4. 在 TOOLS.md 里注册工具
+
+打开 `~/.openclaw/workspace/TOOLS.md`，加入以下内容：
+
+```markdown
+**kb_collector（知识库采集）**
+- 用户说「保存到知识库 <URL>」时，直接 exec 同步执行（不要后台、不要先回复"正在处理"）：
+  `/bin/bash ~/.openclaw/wechat-to-kb/kb_collector/run.sh "<URL>"`
+- 指定知识库：加 `--kb ai` / `engineering` / `management` / `pm`
+- 批量保存：`run.sh -f urls.txt`
+- 无 TTY 下自动非交互，无需加 `-n`
+- 执行完成后将脚本 stdout 原样输出给用户，不要改写
+```
+
+### 5. 重启 OpenClaw
+
+重启后在对话框直接说：
+
+```
+帮我把这篇文章保存到知识库 https://mp.weixin.qq.com/s/xxxxxx
+```
+
+---
+
 ## 快速开始
 
 ### 1. 安装依赖
