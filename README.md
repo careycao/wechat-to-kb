@@ -22,7 +22,7 @@ B 站视频、小红书笔记、RSS 订阅……碎片信息越积越多，却�
 | `xhs_collector` | 小红书收藏夹批量入库 |
 | `rss_daily` | RSS 订阅聚合，微信公众号文章自动归档 |
 
-所有内容统一存储为 **Markdown 文件**，按知识库分类管理，可直接接入任何支持本地文件的 AI 工具（Cursor、Obsidian、RAG 等）。
+所有内容统一存储为**本地文本文件**，按知识库分类管理，可直接接入任何支持本地文件的 AI 工具（OpenClaw、Cursor、Obsidian、RAG 等）。
 
 ---
 
@@ -161,18 +161,25 @@ cd rss_daily && ./run.sh
 
 ## 存储结构
 
-所有文章以 Markdown 存储，按知识库分类：
+所有内容按知识库 + 分类目录存储，每篇文章保留 `.txt`（纯文本，供 AI 检索）和 `.html`（原始格式）两个文件，根目录自动生成 `README.md` 索引：
 
 ```
 ~/knowledge_base/
-├── ai/
-│   ├── index.json
-│   └── articles/
-│       └── 2026-04-13_文章标题.md
-├── engineering/
-├── management/
-└── pm/
+├── AI_KnowBase/
+│   ├── README.md               ← 自动生成的文章索引（标题、摘要、关键词）
+│   ├── 01-战略与框架/
+│   │   ├── 文章标题.txt
+│   │   └── 文章标题.html
+│   ├── 05-AI Coding/
+│   │   ├── 另一篇文章.txt
+│   │   └── 另一篇文章.html
+│   └── 06-未分类/
+├── Engineering_KnowBase/
+├── Management_KnowBase/
+└── PM_KnowBase/
 ```
+
+分类和知识库名称完全可自定义，见 `kb_collector/kb_config.example.py`。
 
 ---
 
