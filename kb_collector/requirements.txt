@@ -1,0 +1,8 @@
+# kb_collector 依赖
+playwright>=1.40.0
+markdownify>=0.11.0
+aiofiles>=23.0.0
+aiohttp>=3.9.0
+jieba>=0.42.0
+# 与 video_collector 共用：kb_builder 委托视频链接时需 import yt_dlp
+yt-dlp>=2024.10.0

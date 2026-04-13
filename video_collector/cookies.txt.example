@@ -1,0 +1,5 @@
+# 将浏览器导出的 Netscape 格式 Cookie 保存为与本目录下的 cookies.txt（勿提交 git）
+# 生成方式见 yt-dlp 文档：https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp
+#
+# 也可使用环境变量 VIDEO_COLLECTOR_COOKIES=/绝对路径/cookies.txt
+# 或使用命令行：./run.sh --cookies /path/to/cookies.txt "https://..."

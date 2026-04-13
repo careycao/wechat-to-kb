@@ -1,0 +1,4 @@
+# video_collector — 视频元数据与字幕（yt-dlp），与 kb_collector 独立
+yt-dlp>=2024.10.0
+jieba>=0.42.0
+playwright>=1.40.0

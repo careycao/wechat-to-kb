@@ -1,0 +1,48 @@
+# ── 登录态与个人凭证（绝对不能进仓库）──────────────────────────
+*_state.json
+cookies.txt
+xhs_user_id.txt
+.env
+
+# ── 个人数据文件 ──────────────────────────────────────────────
+# urls.txt 是个人历史记录，开源版用 urls.txt.example 替代
+kb_collector/urls.txt
+
+# kb_config.py 是个人知识库配置，用 kb_config.example.py 替代
+kb_collector/kb_config.py
+
+# RSS 个人订阅配置
+rss_daily/config.yaml
+
+# RSS 抓取数据库与日报（用户运行时生成）
+rss_daily/data/
+
+# ── Python 构建产物 ───────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# ── 虚拟环境 ─────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── 知识库内容（用户数据，不进仓库）──────────────────────────
+knowledge_base/
+
+# ── macOS ─────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── 编辑器 ───────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo

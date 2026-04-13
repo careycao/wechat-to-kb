@@ -1,0 +1,71 @@
+# RSS_Monitor 配置示例文件
+#
+# 使用方式：
+#   cp rss_config.example.yaml config.yaml
+#   编辑 config.yaml，填入你自己的订阅源
+#   config.yaml 已在 .gitignore 中排除，不会进入 git 仓库
+
+# ── RSS 订阅源 ────────────────────────────────────────────────────────────
+sources:
+  # 标准 RSS/Atom（技术博客）
+  - name: "阮一峰的网络日志"
+    url: "https://www.ruanyifeng.com/blog/atom.xml"
+    tags: [engineering, tech]
+
+  - name: "ByteByteGo Newsletter"
+    url: "https://blog.bytebytego.com/feed"
+    tags: [engineering, system-design]
+
+  - name: "Hacker News Best"
+    url: "https://hnrss.org/best"
+    tags: [tech]
+
+  # 公众号（通过 RSSHub 转换）
+  # biz 获取方式：微信打开公众号主页 → 右上角「···」→「复制链接」→ URL 中 __biz= 的值
+  # 也可直接用 type: wechat 配合 biz，复用 kb_collector 的微信登录态（不依赖 RSSHub）
+  #
+  # 方式一：RSSHub（需要能访问 rsshub.app 或自建实例）
+  # - name: "机器之心"
+  #   url: "https://rsshub.app/wechat/mp/article/MzA3NDM4MzUwMQ=="
+  #   tags: [ai]
+  #
+  # 方式二：直连微信（复用本地登录态，不依赖第三方）
+  # - name: "机器之心"
+  #   type: wechat
+  #   biz: "MzA3NDM4MzUwMQ=="
+  #   tags: [ai]
+
+# ── RSSHub 配置（使用 RSSHub 源时填写）──────────────────────────────────
+rsshub:
+  base_url: "https://rsshub.app"
+  # 如果你自建了 RSSHub 实例，填写自建地址：
+  # base_url: "http://localhost:1200"
+
+# ── 抓取行为 ──────────────────────────────────────────────────────────────
+fetch:
+  max_age_hours: 24              # 只处理最近 N 小时内的文章
+  request_timeout: 15            # 单个请求超时（秒）
+  max_articles_per_source: 20    # 每个源最多抓取文章数
+
+# ── 去重配置（P1，deduplicator.py 实现后生效）────────────────────────────
+dedup:
+  similarity_threshold: 0.82    # 余弦相似度阈值，超过则视为同一话题
+  min_content_length: 100       # 过短文章跳过
+
+# ── 日报配置 ──────────────────────────────────────────────────────────────
+digest:
+  top_n: 10                     # 今日精选最多展示 N 篇
+  output_dir: "~/.openclaw/wechat-to-kb/rss_daily/data/digests"
+  hot_topic_threshold: 2        # 同一话题被 N 个源报道则标记为「热点」
+
+# ── 推送配置（可选，留空则不推送）────────────────────────────────────────
+# 注意：填写 Webhook/Token 等凭证后，config.yaml 更不能进仓库
+push:
+  feishu_webhook: ""            # 飞书机器人 Webhook URL
+  wxpusher_token: ""            # WxPusher Token
+  email:
+    smtp_host: ""
+    smtp_port: 465
+    sender: ""
+    password: ""
+    recipients: []

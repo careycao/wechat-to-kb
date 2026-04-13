@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wechat-to-kb"
+version = "1.0.0"
+description = "把微信公众号、网页、视频、小红书、RSS 统一沉淀进本地知识库"
+requires-python = ">=3.10"
+dependencies = [
+    "playwright>=1.40.0",
+    "jieba>=0.42.0",
+    "yt-dlp>=2024.10.0",
+    "feedparser>=6.0.11",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "pyyaml>=6.0",
+    "aiofiles>=23.0.0",
+    "aiohttp>=3.9.0",
+    "markdownify>=0.11.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
