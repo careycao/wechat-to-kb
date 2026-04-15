@@ -27,7 +27,7 @@ from store import ArticleStore
 
 logger = logging.getLogger(__name__)
 
-# 微信正文选择器优先级（与 kb_collector/page_fetcher.py 保持一致）
+# 微信正文选择器优先级（与 wechat_collector/article_fetcher.py 保持一致）
 CONTENT_SELECTORS = [
     "#js_content",
     "article",
@@ -90,21 +90,18 @@ def _fetch_via_requests(url: str, timeout: int = 15) -> tuple[str, str]:
 
 
 def _fetch_via_playwright(url: str) -> tuple[str, str]:
-    """微信文章：复用 kb_collector 的 PageFetcher（同步包装）。"""
+    """微信文章：复用 wechat_collector 的 ArticleFetcher（同步包装）。"""
     import asyncio
     import sys
 
-    # 把 kb_collector 加入 path
-    kb_collector_path = Path(__file__).resolve().parent.parent / "kb_collector"
-    if str(kb_collector_path) not in sys.path:
-        sys.path.insert(0, str(kb_collector_path))
+    repo_root = Path(__file__).resolve().parent.parent
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
 
-    from page_fetcher import PageFetcher, extract_plain_text  # type: ignore
-
-    state_path = kb_collector_path / "wechat_state.json"
+    from wechat_collector.article_fetcher import ArticleFetcher  # type: ignore
 
     async def _run():
-        fetcher = PageFetcher(state_path=state_path)
+        fetcher = ArticleFetcher()
         await fetcher.init()
         data = await fetcher.fetch(url)
         await fetcher.close()

@@ -1,6 +1,6 @@
 # wechat-to-kb
 
-> 把微信公众号、网页、视频、小红书、RSS 统一沉淀为本地 Markdown 知识库，随时供 AI 检索与问答。
+> 把微信公众号、网页、视频、小红书、RSS 统一沉淀为本地知识库，随时供 AI 检索与问答。
 
 ---
 
@@ -13,11 +13,14 @@ B 站视频、小红书笔记、RSS 订阅……碎片信息越积越多，却�
 
 ---
 
-## 包含四个模块
+## 包含七个模块
 
 | 模块 | 功能 |
 |---|---|
-| `kb_collector` | 核心采集器，支持微信公众号、通用网页，自动路由到对应知识库 |
+| `run.sh` | 顶层统一入口，聊天工具只接这一条，内部自动分流到公众号 / 视频 / 网页 |
+| `wechat_collector` | 公众号文章采集，管理微信登录态，保留评论 PoC 能力 |
+| `web_collector` | 普通网页采集，自动路由到对应知识库 |
+| `common` | 全仓库共享的知识库配置、路由、落盘、索引与文本处理层 |
 | `video_collector` | 视频转文本，支持 B 站、YouTube、小红书视频号等（yt-dlp + 字幕提取） |
 | `xhs_collector` | 小红书收藏夹批量入库 |
 | `rss_daily` | RSS 订阅聚合，微信公众号文章自动归档 |
@@ -30,7 +33,7 @@ B 站视频、小红书笔记、RSS 订阅……碎片信息越积越多，却�
 
 ### 方式一：在 AI 助手对话里直接说（推荐）
 
-不用开终端。在任何接入了 `kb_collector` 的 AI 助手里，直接说一句话就能保存：
+不用开终端。在任何接入了仓库根 `run.sh` 的 AI 助手里，直接说一句话就能保存：
 
 **OpenClaw / Cursor 对话框：**
 ```
@@ -51,13 +54,14 @@ AI 助手会自动判断文章分类、选择对应知识库，并返回保存�
 在你的 AI 助手的工具描述文件（如 OpenClaw 的 `TOOLS.md`、Cursor 的 `AGENTS.md`）中加入以下条目：
 
 ```markdown
-**kb_collector（知识库采集）**
+**wechat-to-kb（统一链接入库）**
 - 用户说「保存到知识库 <URL>」时，直接 exec 执行：
-  `/bin/bash ~/path/to/wechat-to-kb/kb_collector/run.sh "<URL>"`
+  `/bin/bash ~/path/to/wechat-to-kb/run.sh "<URL>"`
+- 脚本会自动分流：公众号 -> `wechat_collector`；视频站 -> `video_collector`；其余网页 -> `web_collector`
 - 指定知识库：加 `--kb ai` / `engineering` / `management` / `pm`
 - 批量保存：`run.sh -f urls.txt`
 - 无 TTY 下自动非交互，无需加 `-n`
-- 保存成功后简短确认（标题 + 知识库名）即可
+- 若面向 OpenClaw，建议将脚本 stdout 原样返回给用户，不要改写
 ```
 
 将 `~/path/to/wechat-to-kb` 替换为你的实际安装路径。
@@ -67,8 +71,10 @@ AI 助手会自动判断文章分类、选择对应知识库，并返回保存�
 ### 方式二：终端命令行
 
 ```bash
-cd kb_collector
+cd ~/.openclaw/wechat-to-kb
 ./run.sh "https://mp.weixin.qq.com/s/xxxxxx"
+./run.sh "https://example.com/article"
+./run.sh "https://www.bilibili.com/video/BVxxxxx"
 ```
 
 ---
@@ -86,15 +92,15 @@ git clone https://github.com/careycao/wechat-to-kb.git ~/.openclaw/wechat-to-kb
 ### 2. 配置知识库
 
 ```bash
-cp ~/.openclaw/wechat-to-kb/kb_collector/kb_config.example.py \
-   ~/.openclaw/wechat-to-kb/kb_collector/kb_config.py
-# 编辑 kb_config.py，修改知识库名称、分类和关键词
+cp ~/.openclaw/wechat-to-kb/common/kb_config.example.py \
+   ~/.openclaw/wechat-to-kb/common/kb_config.local.py
+# 编辑 kb_config.local.py，修改知识库名称、分类和关键词
 ```
 
 ### 3. 初始化环境 + 微信登录
 
 ```bash
-cd ~/.openclaw/wechat-to-kb/kb_collector
+cd ~/.openclaw/wechat-to-kb
 ./run.sh "https://mp.weixin.qq.com/s/任意一篇公众号文章"
 # 首次运行会自动创建 .venv 并安装依赖，同时弹出浏览器扫码登录微信
 # 登录态自动保存，之后无需重复登录
@@ -105,9 +111,10 @@ cd ~/.openclaw/wechat-to-kb/kb_collector
 打开 `~/.openclaw/workspace/TOOLS.md`，加入以下内容：
 
 ```markdown
-**kb_collector（知识库采集）**
-- 用户说「保存到知识库 <URL>」时，直接 exec 同步执行（不要后台、不要先回复"正在处理"）：
-  `/bin/bash ~/.openclaw/wechat-to-kb/kb_collector/run.sh "<URL>"`
+**wechat-to-kb（统一链接入库）**
+- 用户说「保存到知识库 <URL>」时，直接 exec 同步执行：
+  `/bin/bash ~/.openclaw/wechat-to-kb/run.sh "<URL>"`
+- 自动分流：公众号 -> `wechat_collector`；视频站 -> `video_collector`；其余网页 -> `web_collector`
 - 指定知识库：加 `--kb ai` / `engineering` / `management` / `pm`
 - 批量保存：`run.sh -f urls.txt`
 - 无 TTY 下自动非交互，无需加 `-n`
@@ -122,49 +129,69 @@ cd ~/.openclaw/wechat-to-kb/kb_collector
 帮我把这篇文章保存到知识库 https://mp.weixin.qq.com/s/xxxxxx
 ```
 
+如果你刚更新过 OpenClaw 的工具配置，建议直接开一个新会话再试，避免旧会话继续沿用缓存指令。
+
 ---
 
 ## 快速开始
 
-### 1. 安装依赖
+### 1. 配置仓库
 
 ```bash
 git clone git@github.com:careycao/wechat-to-kb.git
 cd wechat-to-kb
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e .
-playwright install chromium
+cp common/kb_config.example.py common/kb_config.local.py
+# 编辑 kb_config.local.py，设置你的知识库根目录
 ```
 
-### 2. 配置知识库
-
-复制示例配置，按需修改知识库路径和分类：
+### 2. 保存第一篇公众号文章
 
 ```bash
-cp kb_collector/kb_config.example.py kb_collector/kb_config.py
-# 编辑 kb_config.py，设置你的知识库根目录
-```
-
-### 3. 保存第一篇公众号文章
-
-```bash
-cd kb_collector
+cd ~/.openclaw/wechat-to-kb
 ./run.sh "https://mp.weixin.qq.com/s/xxxxxx"
 ```
 
-首次运行会打开浏览器，扫码登录微信即可，登录态自动保存。
+首次运行会自动创建 `.venv`、安装依赖，并尽量复用本机已安装的 Chrome / Chromium；公众号文章首次使用会打开浏览器，扫码登录微信即可，登录态自动保存。
 
 ---
 
 ## 各模块使用
 
-### kb_collector（公众号 / 网页）
+### 顶层统一入口（推荐给聊天工具 / 飞书 / OpenClaw）
 
 ```bash
-cd kb_collector
+cd ~/.openclaw/wechat-to-kb
+
+# 公众号文章
+./run.sh "https://mp.weixin.qq.com/s/xxxxx"
+
+# 普通网页
+./run.sh "https://example.com/article"
+
+# 视频链接
+./run.sh "https://www.bilibili.com/video/BVxxxxx"
+
+# 批量
+./run.sh -f urls.txt
+
+# 仅对公众号尝试抓评论
+./run.sh --comments "https://mp.weixin.qq.com/s/xxxxx"
+```
+
+说明：
+- 顶层入口会自动分流到 `wechat_collector` / `video_collector` / `web_collector`
+- 这是最适合给聊天工具配置的入口，后续内部结构继续调整也不影响外部调用
+
+### wechat_collector（公众号）
+
+```bash
+cd wechat_collector
 
 # 保存单篇文章
 ./run.sh "https://mp.weixin.qq.com/s/xxxxx"
+
+# 额外尝试抓取公众号评论（PoC）
+./run.sh --comments "https://mp.weixin.qq.com/s/xxxxx"
 
 # 指定知识库
 ./run.sh --kb ai "https://..."
@@ -176,7 +203,24 @@ cd kb_collector
 ./run.sh --reindex
 ```
 
-详细说明见 [kb_collector/USAGE.md](kb_collector/USAGE.md)。
+详细说明见 [wechat_collector/USAGE.md](wechat_collector/USAGE.md)。
+
+说明：
+- `--comments` 仅对公众号文章生效，依赖已保存的微信登录态。
+- 评论会附加到正文末尾一起写入知识库，便于后续统一检索。
+- 当前为 PoC 模式，评论抓取失败不会影响正文保存。
+
+### web_collector（普通网页）
+
+```bash
+cd web_collector
+./run.sh "https://example.com/article"
+./run.sh --kb engineering "https://example.com/article"
+./run.sh -f urls.txt
+./run.sh --reindex
+```
+
+详细说明见 [web_collector/USAGE.md](web_collector/USAGE.md)。
 
 ### video_collector（视频转文本）
 
@@ -230,7 +274,7 @@ cd rss_daily && ./run.sh
 └── PM_KnowBase/
 ```
 
-分类和知识库名称完全可自定义，见 `kb_collector/kb_config.example.py`。
+分类和知识库名称完全可自定义，见 `common/kb_config.example.py`。
 
 ---
 

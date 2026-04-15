@@ -1,0 +1,1 @@
+"""WeChat article collector package."""

@@ -6,10 +6,15 @@ xhs_user_id.txt
 
 # ── 个人数据文件 ──────────────────────────────────────────────
 # urls.txt 是个人历史记录，开源版用 urls.txt.example 替代
-kb_collector/urls.txt
+urls.txt
+wechat_collector/urls.txt
+web_collector/urls.txt
 
-# kb_config.py 是个人知识库配置，用 kb_config.example.py 替代
-kb_collector/kb_config.py
+# 本地知识库配置
+common/kb_config.local.py
+
+# 微信登录态
+wechat_collector/wechat_state.json
 
 # RSS 个人订阅配置
 rss_daily/config.yaml

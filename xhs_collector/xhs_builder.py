@@ -14,19 +14,20 @@ xhs_builder.py — 小红书收藏入库主流程。
 from __future__ import annotations
 
 import logging
-import re
 import shutil
 import sys
 from pathlib import Path
 
-# 引入 kb_collector 模块
-KB_COLLECTOR = Path(__file__).resolve().parent.parent / "kb_collector"
-sys.path.insert(0, str(KB_COLLECTOR))
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 VIDEO_COLLECTOR = Path(__file__).resolve().parent.parent / "video_collector"
 
-from kb_config import ALL_KBS, KB_BY_KEY, KBConfig
-from kb_router import route, prompt_user_choice
+from common.kb_config import ALL_KBS, KB_BY_KEY, KBConfig, warn_if_using_default_config
+from common.kb_indexing import rebuild_index
+from common.kb_routing import prompt_user_choice, route
+from common.text_processing import safe_filename
 from xhs_fetcher import fetch_collections, login
 
 logging.basicConfig(
@@ -35,9 +36,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
-
-SAFE_CHARS = re.compile(r'[\\/:*?"<>|]')
-
 
 def _try_enhance_video_note(post: dict) -> dict:
     """
@@ -74,11 +72,6 @@ def _try_enhance_video_note(post: dict) -> dict:
     out["video_enhanced"] = True
     logger.info("已用 video_collector 增强视频笔记正文: %s", post["title"][:50])
     return out
-
-
-def safe_filename(title: str, max_len: int = 80) -> str:
-    s = SAFE_CHARS.sub("_", title).strip()
-    return (s[:max_len] or "untitled").strip("_")
 
 
 # ---------------------------------------------------------------------------
@@ -133,12 +126,10 @@ def _save_post(post: dict, kb: KBConfig, category: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# README 更新（复用 kb_builder 逻辑）
+# README 更新（复用 common 索引逻辑）
 # ---------------------------------------------------------------------------
 
 def _rebuild_index(kb: KBConfig) -> None:
-    sys.path.insert(0, str(KB_COLLECTOR))
-    from kb_builder import rebuild_index
     rebuild_index(kb)
 
 
@@ -261,6 +252,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-skip",  action="store_true", help="重新处理已存在的帖子")
     parser.add_argument("--user-id",  default="",          help="手动指定小红书 user_id（24位）")
     args = parser.parse_args()
+    warn_if_using_default_config()
 
     if args.login:
         login()

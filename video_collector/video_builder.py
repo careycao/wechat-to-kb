@@ -21,12 +21,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-KB_COLLECTOR = SCRIPT_DIR.parent / "kb_collector"
-sys.path.insert(0, str(KB_COLLECTOR))
+REPO_ROOT = SCRIPT_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-from kb_builder import KBWriter, load_urls_from_file, rebuild_index
-from kb_config import KB_BY_KEY, ALL_KBS
-from kb_router import prompt_user_choice, route, score_kb as score_kb_one
+from common.kb_config import ALL_KBS, KB_BY_KEY, warn_if_using_default_config
+from common.kb_indexing import rebuild_index
+from common.kb_routing import prompt_user_choice, route, score_kb as score_kb_one
+from common.kb_storage import KBWriter
+from common.path_utils import load_urls_from_file
 from cookies import resolve_cookies_path
 from platforms import fetch_video
 from video_types import format_plain, html_fragment_for_kb
@@ -255,6 +258,7 @@ def main() -> None:
         help="仅打印拉取结果与路由建议（plain_text），不写知识库、不交互",
     )
     args = parser.parse_args()
+    warn_if_using_default_config()
 
     urls: list[str] = list(args.url)
     if args.url_file:

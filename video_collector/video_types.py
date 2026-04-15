@@ -40,7 +40,7 @@ def format_plain(record: VideoRecord) -> str:
 
 
 def html_fragment_for_kb(title: str, plain: str, url: str) -> str:
-    """供 KBWriter.save_stage：仅 <article> 内片段（外层由 kb_builder 包装）。"""
+    """供 KBWriter.save_stage：仅 <article> 内片段（外层由 collector 主流程包装）。"""
     import html as html_module
 
     esc_title = html_module.escape(title)

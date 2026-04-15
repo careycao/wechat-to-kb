@@ -22,7 +22,7 @@ sources:
 
   # 公众号（通过 RSSHub 转换）
   # biz 获取方式：微信打开公众号主页 → 右上角「···」→「复制链接」→ URL 中 __biz= 的值
-  # 也可直接用 type: wechat 配合 biz，复用 kb_collector 的微信登录态（不依赖 RSSHub）
+  # 也可直接用 type: wechat 配合 biz，复用 wechat_collector 的微信登录态（不依赖 RSSHub）
   #
   # 方式一：RSSHub（需要能访问 rsshub.app 或自建实例）
   # - name: "机器之心"

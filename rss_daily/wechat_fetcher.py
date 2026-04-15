@@ -1,7 +1,7 @@
 """
 wechat_fetcher.py — 用 Playwright 登录态直接抓微信公众号文章列表。
 
-不依赖 RSSHub，复用 kb_collector 的 wechat_state.json 登录态。
+不依赖 RSSHub，复用 wechat_collector 的 wechat_state.json 登录态。
 
 接口兼容 fetcher.py 的 fetch_source()，对 main.py 完全透明。
 
@@ -22,8 +22,15 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-KB_COLLECTOR_PATH = Path(__file__).resolve().parent.parent / "kb_collector"
-WECHAT_STATE_PATH = KB_COLLECTOR_PATH / "wechat_state.json"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from wechat_collector.wechat_session import (  # noqa: E402
+    DEFAULT_MOBILE_USER_AGENT,
+    build_browser_launch_kwargs,
+    ensure_wechat_state_migrated,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -172,14 +179,12 @@ async def _fetch_async(
     用 Playwright session 调用微信 MP getmsg API，返回文章列表。
     每个元素：{ title, url, published(ISO8601), excerpt }
     """
-    if not WECHAT_STATE_PATH.exists():
+    state_path = ensure_wechat_state_migrated()
+    if not state_path.exists():
         raise FileNotFoundError(
-            f"找不到微信登录态: {WECHAT_STATE_PATH}\n"
-            "请先运行 kb_collector 完成微信网页版登录。"
+            f"找不到微信登录态: {state_path}\n"
+            "请先运行 wechat_collector 完成微信网页版登录。"
         )
-
-    if str(KB_COLLECTOR_PATH) not in sys.path:
-        sys.path.insert(0, str(KB_COLLECTOR_PATH))
 
     from playwright.async_api import async_playwright
 
@@ -188,20 +193,11 @@ async def _fetch_async(
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            headless=True,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-            ],
+            **build_browser_launch_kwargs(headless=True),
         )
         context = await browser.new_context(
-            storage_state=str(WECHAT_STATE_PATH),
-            user_agent=(
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
-                "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-                "Mobile/15E148 MicroMessenger/8.0.47(0x18002f2d) NetType/WIFI Language/zh_CN"
-            ),
+            storage_state=str(state_path),
+            user_agent=DEFAULT_MOBILE_USER_AGENT,
             viewport={"width": 390, "height": 844},
             is_mobile=True,
         )

@@ -1,12 +1,12 @@
 # video_collector
 
-将哔哩哔哩、小红书、微信视频号等视频页链接转为可检索文本（简介 + 字幕，若有），经 `kb_router` 确认后写入与 `kb_collector` 相同结构的知识库。
+将哔哩哔哩、小红书、微信视频号等视频页链接转为可检索文本（简介 + 字幕，若有），经 `kb_router` 确认后写入与 `wechat_collector` / `web_collector` 相同结构的知识库。
 
 ## 依赖
 
 - Python 3.10+
 - `yt-dlp`（通过 `requirements.txt` 安装）
-- 与 `../kb_collector` 共用 `kb_config` / `kb_router` / `KBWriter`
+- 与 `../common` 共用 `kb_config` / `kb_routing` / `KBWriter`
 
 不内置 LLM；不默认做 ASR（音视频转文字为 **P1 主线**，见方案第九节）。
 
