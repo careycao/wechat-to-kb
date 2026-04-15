@@ -55,4 +55,4 @@ cd ~/.openclaw/wechat-to-kb/video_collector
   `./run.sh --dry-run 'https://www.bilibili.com/video/BVxxxx?vd_source=...'`
 - 解析能力取决于 [yt-dlp](https://github.com/yt-dlp/yt-dlp) 与各站点策略；可 `pip install -U yt-dlp` 升级。
 - 完整拉取失败时会**自动回退**为仅元数据（标题 + 简介等），`转写来源` 为「仅简介/文案」。
-- **正式后续能力（含 ASR）**以 `Tech Design DocDir/Video_Collector_方案.md` **第九节**为准；Cookie、`--dry-run` 属**第十节**（工程便利，非 P1）。
+- **正式后续能力（含 ASR）**以 `~/knowledge_base/Projects/wechat-to-kb/Designs/Video_Collector_方案.md` **第九节**为准；Cookie、`--dry-run` 属**第十节**（工程便利，非 P1）。

@@ -66,6 +66,11 @@ AI 助手会自动判断文章分类、选择对应知识库，并返回保存�
 
 将 `~/path/to/wechat-to-kb` 替换为你的实际安装路径。
 
+当前推荐布局：
+
+- 真实仓库：`~/DevProjects/wechat-to-kb`
+- OpenClaw 入口：`~/.openclaw/wechat-to-kb`（软链接到真实仓库）
+
 ---
 
 ### 方式二：终端命令行
@@ -83,10 +88,11 @@ cd ~/.openclaw/wechat-to-kb
 
 如果你使用 [OpenClaw](https://openclaw.ai)，按以下步骤配置后，可以直接在对话框说"帮我保存这个链接"，无需打开终端。
 
-### 1. clone 到 OpenClaw 目录
+### 1. clone 到项目目录，并保留 OpenClaw 入口
 
 ```bash
-git clone https://github.com/careycao/wechat-to-kb.git ~/.openclaw/wechat-to-kb
+git clone https://github.com/careycao/wechat-to-kb.git ~/DevProjects/wechat-to-kb
+ln -s ~/DevProjects/wechat-to-kb ~/.openclaw/wechat-to-kb
 ```
 
 ### 2. 配置知识库
