@@ -86,7 +86,6 @@ class ArticleFetcher:
         page = await self.context.new_page()
         try:
             await page.goto(url, timeout=60000)
-            await page.wait_for_load_state("networkidle")
 
             title = await page.title()
             og_title = await page.query_selector("meta[property='og:title']")

@@ -84,13 +84,15 @@ def _already_exists(title: str) -> bool:
     for kb in ALL_KBS:
         for cat in kb.category_order:
             prefixed = kb.raw_to_prefixed.get(cat, cat)
-            if (kb.path / prefixed / f"{safe}.txt").exists():
+            if (kb.path / prefixed / f"{safe}.md").exists():
                 return True
     return False
 
 
 def _save_post(post: dict, kb: KBConfig, category: str) -> None:
     """将帖子写入指定 KB 的分类目录。"""
+    from datetime import datetime
+
     title   = post["title"]
     content = post["content"]
     url     = post["url"]
@@ -101,12 +103,27 @@ def _save_post(post: dict, kb: KBConfig, category: str) -> None:
     dest_dir = kb.path / prefixed
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    # TXT
-    txt_lines = [title, "", content, ""]
+    # MD（主文件，供 AI 检索和 Obsidian 查看）
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    tag_line = "，".join(tags) if tags else ""
+    md_lines = [
+        "---",
+        f"title: {title}",
+        f"url: {url}",
+        f"date: {date_str}",
+        *([ f"tags: [{tag_line}]"] if tags else []),
+        "---",
+        "",
+        f"# {title}",
+        "",
+        content,
+        "",
+    ]
     if tags:
-        txt_lines.append("标签：" + " / ".join(tags))
-    txt_lines.append(f"来源：{url}")
-    (dest_dir / f"{safe}.txt").write_text("\n".join(txt_lines), encoding="utf-8")
+        md_lines.append("**标签：** " + " / ".join(tags))
+        md_lines.append("")
+    md_lines.append(f"**来源：** [{url}]({url})")
+    (dest_dir / f"{safe}.md").write_text("\n".join(md_lines), encoding="utf-8")
 
     # HTML（轻量，保留原文链接）
     tag_html = " ".join(f'<span class="tag">{t}</span>' for t in tags)

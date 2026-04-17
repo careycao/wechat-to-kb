@@ -91,7 +91,7 @@ async def run_urls(
                 writer = writers[kb_key]
                 kb = KB_BY_KEY[kb_key]
                 if skip_existing and writer.already_exists(title):
-                    logger.info("已存在，跳过: %s", title[:50])
+                    print(f"已存在，跳过：{title[:60]}")
                     continue
 
                 writer.save_stage(data)
@@ -107,7 +107,7 @@ async def run_urls(
                 print(f"• 知识库： {kb.name}")
                 print(f"• 分类： {prefixed}")
                 print(f"• 核心关键词： {keywords}")
-                print(f"已同步更新知识库索引。后续可以在 {save_path} 下找到原文 HTML/TXT 版本。\n")
+                print(f"已同步更新知识库索引。后续可以在 {save_path} 下找到原文 MD/HTML 版本。\n")
             except Exception:
                 logger.exception("处理出错: %s", redact_url_for_log(url))
     finally:

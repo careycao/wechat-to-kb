@@ -12,13 +12,19 @@ from common.text_processing import extract_keywords_for_index, extract_summary
 logger = logging.getLogger(__name__)
 
 
-def _extract_original_url(html_path: Path) -> str | None:
-    if not html_path.exists():
+def _extract_original_url(md_path: Path) -> str | None:
+    """从 .md 文件的 YAML frontmatter 中提取原始 URL。"""
+    if not md_path.exists():
         return None
     try:
-        raw = html_path.read_text(encoding="utf-8", errors="replace")
-        match = re.search(r"<!--\s*original_url:\s*(\S+)\s*-->", raw)
-        return match.group(1).strip() if match else None
+        raw = md_path.read_text(encoding="utf-8", errors="replace")
+        if raw.startswith("---"):
+            end = raw.find("---", 3)
+            if end != -1:
+                for line in raw[3:end].splitlines():
+                    if line.startswith("url:"):
+                        return line.split(":", 1)[1].strip()
+        return None
     except Exception:
         return None
 
@@ -35,22 +41,22 @@ def collect_articles_meta(kb: KBConfig) -> list[dict]:
         if not category_dir.is_dir() or category_dir.name.startswith("_"):
             continue
 
-        for text_path in category_dir.glob("*.txt"):
-            html_path = category_dir / f"{text_path.stem}.html"
+        for md_path in category_dir.glob("*.md"):
+            html_path = category_dir / f"{md_path.stem}.html"
             try:
-                text = text_path.read_text(encoding="utf-8", errors="replace")
+                text = md_path.read_text(encoding="utf-8", errors="replace")
             except Exception:
                 text = ""
 
             rows.append(
                 {
                     "category": category_dir.name,
-                    "title": text_path.stem,
+                    "title": md_path.stem,
                     "html_path": html_path,
-                    "txt_path": text_path,
+                    "md_path": md_path,
                     "summary": extract_summary(text),
                     "keywords": extract_keywords_for_index(text),
-                    "original_url": _extract_original_url(html_path),
+                    "original_url": _extract_original_url(md_path),
                 }
             )
     return rows
@@ -76,7 +82,7 @@ def generate_readme(kb: KBConfig, rows: list[dict]) -> str:
         if row.get("original_url"):
             link = f"[{row['title']}]({row['original_url']})"
         else:
-            rel_path = row["category"] + "/" + row["html_path"].name
+            rel_path = row["category"] + "/" + row["md_path"].name
             link = f"[{row['title']}]({rel_path})"
         summary = (row["summary"] or "-")[:80]
         keywords = (row["keywords"] or "-")[:60]
