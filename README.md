@@ -262,17 +262,17 @@ cd rss_daily && ./run.sh
 
 ## 存储结构
 
-所有内容按知识库 + 分类目录存储，每篇文章保留 `.txt`（纯文本，供 AI 检索）和 `.html`（原始格式）两个文件，根目录自动生成 `README.md` 索引：
+所有内容按知识库 + 分类目录存储，每篇文章保留 `.md`（Markdown，供 AI 检索和 Obsidian 查看）和 `.html`（原始存档）两个文件，根目录自动生成 `README.md` 索引：
 
 ```
 ~/knowledge_base/
 ├── AI_KnowBase/
 │   ├── README.md               ← 自动生成的文章索引（标题、摘要、关键词）
 │   ├── 01-战略与框架/
-│   │   ├── 文章标题.txt
+│   │   ├── 文章标题.md
 │   │   └── 文章标题.html
 │   ├── 05-AI Coding/
-│   │   ├── 另一篇文章.txt
+│   │   ├── 另一篇文章.md
 │   │   └── 另一篇文章.html
 │   └── 06-未分类/
 ├── Engineering_KnowBase/
