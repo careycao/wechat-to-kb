@@ -70,11 +70,12 @@ class PageFetcher:
     def __init__(self):
         self.browser = None
         self.context = None
+        self._playwright = None
 
     async def init(self) -> None:
         from playwright.async_api import async_playwright
 
-        playwright = await async_playwright().start()
+        self._playwright = await async_playwright().start()
         launch_kwargs = {
             "headless": os.environ.get("KB_HEADLESS", "").lower() in ("1", "true", "yes"),
             "args": ["--disable-blink-features=AutomationControlled"],
@@ -83,7 +84,7 @@ class PageFetcher:
         if executable_path:
             launch_kwargs["executable_path"] = executable_path
 
-        self.browser = await playwright.chromium.launch(**launch_kwargs)
+        self.browser = await self._playwright.chromium.launch(**launch_kwargs)
         self.context = await self.browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -141,3 +142,6 @@ class PageFetcher:
         if self.browser:
             await self.browser.close()
             self.browser = None
+        if self._playwright:
+            await self._playwright.stop()
+            self._playwright = None

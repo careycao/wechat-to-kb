@@ -58,12 +58,13 @@ class ArticleFetcher:
         self.state_path = state_path or ensure_wechat_state_migrated()
         self.browser = None
         self.context = None
+        self._playwright = None
 
     async def init(self) -> None:
         from playwright.async_api import async_playwright
 
-        playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(
+        self._playwright = await async_playwright().start()
+        self.browser = await self._playwright.chromium.launch(
             **build_browser_launch_kwargs(
                 headless=os.environ.get("KB_HEADLESS", "").lower() in ("1", "true", "yes")
             )
@@ -151,3 +152,6 @@ class ArticleFetcher:
         if self.browser:
             await self.browser.close()
             self.browser = None
+        if self._playwright:
+            await self._playwright.stop()
+            self._playwright = None
