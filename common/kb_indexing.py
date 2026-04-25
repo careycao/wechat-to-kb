@@ -9,6 +9,13 @@ from pathlib import Path
 from common.kb_config import KBConfig
 from common.text_processing import extract_keywords_for_index, extract_summary
 
+_RE_FRONTMATTER = re.compile(r"^---\s*\n.*?\n---\s*\n", re.DOTALL)
+
+
+def _strip_frontmatter(text: str) -> str:
+    """剔除开头的 YAML frontmatter，供摘要/关键词提取使用。"""
+    return _RE_FRONTMATTER.sub("", text, count=1)
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,14 +55,15 @@ def collect_articles_meta(kb: KBConfig) -> list[dict]:
             except Exception:
                 text = ""
 
+            body = _strip_frontmatter(text)
             rows.append(
                 {
                     "category": category_dir.name,
                     "title": md_path.stem,
                     "html_path": html_path,
                     "md_path": md_path,
-                    "summary": extract_summary(text),
-                    "keywords": extract_keywords_for_index(text),
+                    "summary": extract_summary(body),
+                    "keywords": extract_keywords_for_index(body),
                     "original_url": _extract_original_url(md_path),
                 }
             )

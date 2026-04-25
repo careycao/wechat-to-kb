@@ -1,0 +1,104 @@
+[04/25/26 20:06:36] INFO     [1/1] 处理:                unified_collector.py:142
+                             https://mp.weixin.qq.com/s                         
+                             /8QyX6wngPAl0mvNVNPUmBw ->                         
+                             wechat                                             
+[04/25/26 20:06:41] INFO     [轻量模式] 成功:             article_fetcher.py:177
+                             https://mp.weixin.qq.com/s/8                       
+                             QyX6wngPAl0mvNVNPUmBw                              
+Building prefix dict from the default dictionary ...
+                    DEBUG    Building prefix dict from the       __init__.py:113
+                             default dictionary ...                             
+Loading model from cache /var/folders/1y/tr7qczrd77bd_9nvs6brh15h0000gn/T/jieba.cache
+                    DEBUG    Loading model from cache            __init__.py:132
+                             /var/folders/1y/tr7qczrd77bd_9nvs6b                
+                             rh15h0000gn/T/jieba.cache                          
+Loading model cost 0.514 seconds.
+[04/25/26 20:06:42] DEBUG    Loading model cost 0.514 seconds.   __init__.py:164
+Prefix dict has been built successfully.
+                    DEBUG    Prefix dict has been built          __init__.py:166
+                             successfully.                                      
+[unified_collector] 置信度低，已自动选用得分最高：Management_KnowBase / 03-机制与流程
+                    INFO     已暂存: 我花半天用 AI              kb_storage.py:79
+                             做了一个公众号写作工具，也顺手验证                 
+                             了一套 AI 提效工作流                               
+                    INFO     已归类 [03-机制与流程] ->          kb_storage.py:96
+                             我花半天用 AI                                      
+                             做了一个公众号写作工具，也顺手验证                 
+                             了一套 AI 提效工作流                               
+[04/25/26 20:06:43] INFO     已生成链接列表:                  kb_indexing.py:114
+                             /Users/careycao/knowledge_base/M                   
+                             anagement_KnowBase/des_url_list.                   
+                             txt（42 条）                                       
+                    INFO     索引重建完成：Management_KnowBas kb_indexing.py:121
+                             e（42 篇）                                         
+
+──────────────────────────────────────────────────
+🧪 list_knowledge_bases
+──────────────────────────────────────────────────
+已配置的知识库（6 个）：
+
+1. AI_KnowBase（key: ai）
+   路径：/Users/careycao/knowledge_base/AI_KnowBase
+   分类：战略与框架 / 实践与案例 / 工具与方法 / 人才与文化 / AI Coding
+
+2. Engineering_KnowBase（key: engineering）
+   路径：/Users/careycao/knowledge_base/Engineering_KnowBase
+   分类：系统架构 / 后端与中间件 / 前端与移动端 / 数据与存储 / DevOps与工程效能 / 职级与规范
+
+3. Management_KnowBase（key: management）
+   路径：/Users/careycao/knowledge_base/Management_KnowBase
+   分类：战略与组织 / 团队与人才 / 机制与流程 / 目标与绩效 / 职场与个人成长
+
+4. PM_KnowBase（key: pm）
+   路径：/Users/careycao/knowledge_base/PM_KnowBase
+   分类：产品战略 / 用户研究 / 产品设计 / 数据分析 / 运营增长
+
+5. Life_KnowBase（key: life）
+   路径：/Users/careycao/knowledge_base/Life_KnowBase
+   分类：健康与运动 / 理财与财务 / 家庭与育儿
+
+6. Wisdom_KnowBase（key: wisdom）
+   路径：/Users/careycao/knowledge_base/Wisdom_KnowBase
+   分类：哲学与思维 / 经济与社会 / 传统文化 / 历史与人文 / 感悟与随笔
+  ✅ list_knowledge_bases 返回正常
+
+──────────────────────────────────────────────────
+🧪 save_url — 无效 kb key 应返回错误提示
+──────────────────────────────────────────────────
+  ✅ 正确返回错误提示：未知知识库 key：invalid_kb_key
+可用 key：ai, engineering, management, pm, life, wisdom
+
+──────────────────────────────────────────────────
+🧪 save_url — 真实公众号文章（请确保网络可访问）
+──────────────────────────────────────────────────
+  URL: https://mp.weixin.qq.com/s/8QyX6wngPAl0mvNVNPUmBw
+  （首次保存约 3-5 秒，已存在则显示"已存在，跳过"）
+
+已保存完成 ✅
+文章信息：
+• 标题： 我花半天用 AI 做了一个公众号写作工具，也顺手验证了一套 AI 提效工作流
+• 知识库： Management_KnowBase
+• 分类： 03-机制与流程
+• 核心关键词： AI, 文档, 工具, 排版, 而是, 公众
+已同步更新知识库索引。后续可以在 ~/knowledge_base/Management_KnowBase/03-机制与流程/ 下找到原文 MD/HTML 版本。
+  ✅ save_url 执行完成
+
+──────────────────────────────────────────────────
+🧪 save_urls_batch — 空列表应返回提示
+──────────────────────────────────────────────────
+  ✅ 正确处理空列表：URL 列表为空，未执行任何操作。
+
+──────────────────────────────────────────────────
+🧪 rebuild_index — 无效 kb key 应返回错误提示
+──────────────────────────────────────────────────
+  ✅ 正确返回错误提示：未知知识库 key：bad_key
+可用 key：ai, engineering, management, pm, life, wisdom
+
+──────────────────────────────────────────────────
+🧪 import_local_file — 文件不存在应返回错误提示
+──────────────────────────────────────────────────
+  ✅ 正确返回错误提示：文件不存在：/tmp/not_exist.pdf
+
+==================================================
+测试完成。重点看 Test 3（save_url）的实际保存结果。
+==================================================

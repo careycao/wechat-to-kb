@@ -1,0 +1,10 @@
+name = "feishu-bot"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+
+# 敏感环境变量通过命令行设置：
+# wrangler secret put FEISHU_APP_ID
+# wrangler secret put FEISHU_APP_SECRET
+# wrangler secret put FEISHU_VERIFY_TOKEN
+# wrangler secret put BITABLE_APP_TOKEN
+# wrangler secret put BITABLE_TABLE_ID

@@ -97,8 +97,11 @@ class PageFetcher:
     async def fetch(self, url: str) -> dict | None:
         page = await self.context.new_page()
         try:
-            await page.goto(url, timeout=60000)
-            await page.wait_for_load_state("networkidle")
+            await page.goto(url, timeout=60000, wait_until="domcontentloaded")
+            try:
+                await page.wait_for_load_state("networkidle", timeout=10000)
+            except Exception:
+                pass  # networkidle is best-effort; proceed with whatever has loaded
 
             title = await page.title()
             og_title = await page.query_selector("meta[property='og:title']")

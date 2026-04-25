@@ -55,6 +55,7 @@ if [[ $# -eq 0 ]]; then
   echo "  ./run.sh --kb ai <URL>          强制指定知识库"
   echo "  ./run.sh --comments <URL>       公众号文章额外尝试抓评论"
   echo "  ./run.sh --reindex              仅重建索引"
+  echo "  ./run.sh --login                刷新微信登录 session（实验性，暂对付费文章无效）"
   exit 1
 fi
 

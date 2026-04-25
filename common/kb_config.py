@@ -18,7 +18,10 @@ from pathlib import Path
 
 _THIS_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _THIS_DIR.parent
-_KB_ROOT = Path(os.environ.get("KB_ROOT", "")).expanduser() or Path.home() / "knowledge_base"
+# 注意：不能简单写成 `Path(os.environ.get("KB_ROOT", "")) or ...`，
+# 因为 Path("") 等同于 Path(".") 且为真值，会让兜底分支永远走不到。
+_kb_root_env = os.environ.get("KB_ROOT", "").strip()
+_KB_ROOT = Path(_kb_root_env).expanduser() if _kb_root_env else Path.home() / "knowledge_base"
 
 
 @dataclass

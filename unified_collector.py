@@ -29,7 +29,7 @@ from cookies import resolve_cookies_path
 from platforms import fetch_video
 from video_types import format_plain, html_fragment_for_kb
 from web_collector.page_fetcher import PageFetcher
-from wechat_collector.article_fetcher import ArticleFetcher
+from wechat_collector.article_fetcher import ArticleFetcher, login_wechat_session
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -234,6 +234,7 @@ def main() -> None:
         help="强制指定目标知识库",
     )
     parser.add_argument("--reindex", action="store_true", help="仅重建索引，不下载")
+    parser.add_argument("--login", action="store_true", help="打开浏览器刷新微信 session（实验性，暂对付费文章无效）")
     parser.add_argument(
         "--comments",
         action="store_true",
@@ -250,6 +251,10 @@ def main() -> None:
     args = parser.parse_args()
 
     warn_if_using_default_config()
+
+    if args.login:
+        asyncio.run(login_wechat_session())
+        return
 
     if args.reindex:
         targets = [KB_BY_KEY[args.kb]] if args.kb else ALL_KBS
