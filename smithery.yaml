@@ -1,0 +1,27 @@
+startCommand:
+  type: stdio
+  commandFunction: |-
+    (config) => ({
+      command: "uvx",
+      args: ["--from", "wechat-to-kb[mcp]", "wechat-to-kb-mcp"],
+      env: {
+        KB_ROOT: config.kbRoot || "",
+        KB_NON_INTERACTIVE: "1",
+        KB_HEADLESS: config.headless ? "1" : "0",
+        ...(config.anthropicApiKey ? { ANTHROPIC_API_KEY: config.anthropicApiKey } : {})
+      }
+    })
+
+configSchema:
+  type: object
+  properties:
+    kbRoot:
+      type: string
+      description: "知识库根目录的绝对路径（默认 ~/knowledge_base）。例：/Users/yourname/knowledge_base"
+    headless:
+      type: boolean
+      description: "是否以无头模式运行 Playwright 浏览器（服务器/后台场景建议开启）"
+      default: false
+    anthropicApiKey:
+      type: string
+      description: "Anthropic API Key（可选）。用于 import_local_file 的 AI 价值评估；已安装 Claude Code CLI 则无需填写"
