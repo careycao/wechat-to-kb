@@ -406,15 +406,7 @@ cd rss_daily && ./run.sh
 
 ## 关于作者
 
-**智码探路**——持续探索 AI 工具与个人知识管理的交叉点。
-
-微信搜索公众号「**智码探路**」，或扫码关注：
-
-![智码探路公众号二维码](docs/zima-qrcode.jpg)
-
-> 分享 AI 效率工具、知识库搭建实践，以及 wechat-to-kb 的使用技巧与更新动态。
-
-有 Bug、建议或使用问题，欢迎在 [GitHub Issues](https://github.com/careycao/wechat-to-kb/issues) 反馈。
+**智码探路**——持续聚焦 AI 工程与提效工具的一线实践和思考。
 
 ---
 
