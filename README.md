@@ -78,6 +78,8 @@ pip install -e ".[mcp]"
 
 ## 使用方式
 
+> 约定：一次性临时脚本 / 临时验证代码统一放 `scratch/`，该目录已加入 `.gitignore`，不会上传到 GitHub。
+
 ### 方式一：在 AI 助手对话里直接说（推荐）
 
 不用开终端。在任何接入了仓库根 `run.sh` 的 AI 助手里，直接说一句话就能保存：
@@ -330,7 +332,7 @@ cd rss_daily && ./run.sh
 
 **认证**：默认走本机 `claude` CLI（Claude Code）登录态，**无需 API Key**；没装 Claude Code 时回退 `ANTHROPIC_API_KEY`。
 
-**报告**：运行后在仓库根生成 `local_docs_import_report.md`，分四段（已入库 / 待确认 / 低价值 / 去重）。
+**报告**：默认输出到 `~/knowledge_base/Archive/LocalDocs/reports/`（文件名含日期与来源目录名），分四段（已入库 / 待确认 / 低价值 / 去重）。
 
 **字段速查**：首次运行会在 `~/knowledge_base/Archive/LocalDocs/README.md` 自动生成 frontmatter 字段说明，方便在 KB 里就近查阅。完整设计见 `Designs/20260419-local-pdf-import-design.md`（v1.2）。
 

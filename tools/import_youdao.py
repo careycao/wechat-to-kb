@@ -33,7 +33,8 @@ from common.text_processing import safe_filename
 
 _KB_ROOT = Path.home() / "knowledge_base"
 _DEFAULT_SOURCE = _KB_ROOT / "Archive" / "Youdao" / "Youdao_精选"
-_DEFAULT_REPORT = Path.cwd() / "youdao_import_report.md"
+_SCRATCH_DIR = _REPO_ROOT / "scratch"
+_DEFAULT_REPORT = _SCRATCH_DIR / f"youdao_import_report_{date.today().strftime('%Y%m%d')}.md"
 _YOUDAO_SUBDIR = "youdao"  # 归类子目录名，固定为 youdao
 
 # ── 数据结构 ─────────────────────────────────────────────────────────────────
@@ -343,6 +344,7 @@ def main() -> None:
 
     report_content = _build_report(records, source_root, dry_run=args.dry_run)
     report_path = args.report.expanduser().resolve()
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(report_content, encoding="utf-8")
 
     print()
