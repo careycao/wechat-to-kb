@@ -410,6 +410,8 @@ cd rss_daily && ./run.sh
 
 微信搜索公众号「**智码探路**」，或扫码关注：
 
+![智码探路公众号二维码](docs/zima-qrcode.jpg)
+
 > 分享 AI 效率工具、知识库搭建实践，以及 wechat-to-kb 的使用技巧与更新动态。
 
 有 Bug、建议或使用问题，欢迎在 [GitHub Issues](https://github.com/careycao/wechat-to-kb/issues) 反馈。
