@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wechat-to-kb"
-version = "1.0.0"
+version = "1.1.0"
 description = "把微信公众号、网页、视频、小红书、RSS 统一沉淀进本地知识库"
 requires-python = ">=3.10"
 dependencies = [
@@ -20,6 +20,14 @@ dependencies = [
     "aiohttp>=3.9.0",
     "markdownify>=0.11.0",
 ]
+
+[project.optional-dependencies]
+mcp = [
+    "mcp[cli]>=1.3",
+]
+
+[project.scripts]
+wechat-to-kb-mcp = "mcp_server.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
