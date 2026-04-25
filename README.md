@@ -40,7 +40,10 @@ B 站视频、小红书笔记、RSS 订阅……碎片信息越积越多，却�
 ### 安装
 
 ```bash
-# 已 clone 本项目的用户
+# 方式一：uvx（无需 clone，推荐）
+uvx --from 'wechat-to-kb[mcp]' wechat-to-kb-mcp
+
+# 方式二：已 clone 本项目的用户
 pip install -e ".[mcp]"
 ```
 
@@ -52,9 +55,8 @@ pip install -e ".[mcp]"
 {
   "mcpServers": {
     "wechat-to-kb": {
-      "command": "python",
-      "args": ["-m", "mcp_server.server"],
-      "cwd": "/Users/你的用户名/DevProjects/wechat-to-kb",
+      "command": "uvx",
+      "args": ["--from", "wechat-to-kb[mcp]", "wechat-to-kb-mcp"],
       "env": {
         "KB_ROOT": "/Users/你的用户名/knowledge_base",
         "KB_NON_INTERACTIVE": "1"
@@ -64,7 +66,26 @@ pip install -e ".[mcp]"
 }
 ```
 
-重启 Claude Desktop 后，在对话中直接说：
+### 配置 Cursor
+
+编辑 `~/.cursor/mcp.json`（不存在则新建）：
+
+```json
+{
+  "mcpServers": {
+    "wechat-to-kb": {
+      "command": "uvx",
+      "args": ["--from", "wechat-to-kb[mcp]", "wechat-to-kb-mcp"],
+      "env": {
+        "KB_ROOT": "/Users/你的用户名/knowledge_base",
+        "KB_NON_INTERACTIVE": "1"
+      }
+    }
+  }
+}
+```
+
+重启后，在对话中直接说：
 
 ```
 帮我把这篇文章存到知识库：https://mp.weixin.qq.com/s/xxxxx
@@ -82,7 +103,11 @@ pip install -e ".[mcp]"
 
 > 约定：一次性临时脚本 / 临时验证代码统一放 `scratch/`，该目录已加入 `.gitignore`，不会上传到 GitHub。
 
-### 方式一：在 AI 助手对话里直接说（推荐）
+### 方式一：MCP Server（推荐，见上方章节）
+
+Claude Desktop / Cursor 等支持 MCP 的工具直接调用，无需终端，见上方"MCP Server"章节。
+
+### 方式二：在 AI 助手对话里（OpenClaw / 飞书）
 
 不用开终端。在任何接入了仓库根 `run.sh` 的 AI 助手里，直接说一句话就能保存：
 
@@ -124,7 +149,7 @@ AI 助手会自动判断文章分类、选择对应知识库，并返回保存�
 
 ---
 
-### 方式二：终端命令行
+### 方式三：终端命令行
 
 ```bash
 cd ~/.openclaw/wechat-to-kb
@@ -376,6 +401,18 @@ cd rss_daily && ./run.sh
 - yt-dlp（视频字幕提取，video_collector 使用）
 - MarkItDown + pypdf（本地 PDF 抽取，`tools/import_local_docs.py` 使用，由 `run_import_local_docs.sh` 自动装）
 - Claude Code CLI（可选，本地 PDF 价值评估默认走它；未安装时可回退 `ANTHROPIC_API_KEY` 或加 `--no-value-check`）
+
+---
+
+## 关于作者
+
+**智码探路**——持续探索 AI 工具与个人知识管理的交叉点。
+
+微信搜索公众号「**智码探路**」，或扫码关注：
+
+> 分享 AI 效率工具、知识库搭建实践，以及 wechat-to-kb 的使用技巧与更新动态。
+
+有 Bug、建议或使用问题，欢迎在 [GitHub Issues](https://github.com/careycao/wechat-to-kb/issues) 反馈。
 
 ---
 
