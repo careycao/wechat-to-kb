@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.careycao/wechat-to-kb",
+  "title": "wechat-to-kb",
+  "description": "Save WeChat articles, web pages, videos (Bilibili, YouTube, TikTok, etc.) and local documents (PDF/DOCX/PPTX) to a local knowledge base with auto-routing and AI-powered categorization. Ideal for researchers, content creators, and RAG/LLM workflows.",
+  "repository": {
+    "url": "https://github.com/careycao/wechat-to-kb",
+    "source": "github"
+  },
+  "version_detail": {
+    "version": "1.1.0"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "wechat-to-kb",
+      "version": "1.1.0",
+      "runtimeHint": "uvx",
+      "environmentVariables": [
+        {
+          "name": "KB_ROOT",
+          "description": "Root directory of the local knowledge base (default: ~/knowledge_base)",
+          "isRequired": false
+        },
+        {
+          "name": "KB_NON_INTERACTIVE",
+          "description": "Set to '1' to disable interactive routing prompts (required in MCP context)",
+          "isRequired": false
+        },
+        {
+          "name": "KB_HEADLESS",
+          "description": "Set to '1' to run Playwright browser in headless mode (recommended for server/background use)",
+          "isRequired": false
+        },
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "description": "Optional: API key for AI-powered document value assessment (import_local_file). Not required if Claude Code CLI is installed.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

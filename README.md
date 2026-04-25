@@ -1,5 +1,7 @@
 # wechat-to-kb
 
+<!-- mcp-name: io.github.careycao/wechat-to-kb -->
+
 > 把微信公众号、网页、视频、小红书、RSS 统一沉淀为本地知识库，随时供 AI 检索与问答。
 
 ---

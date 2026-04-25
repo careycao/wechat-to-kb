@@ -6,7 +6,21 @@ build-backend = "setuptools.build_meta"
 name = "wechat-to-kb"
 version = "1.1.0"
 description = "把微信公众号、网页、视频、小红书、RSS 统一沉淀进本地知识库"
+readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["wechat", "knowledge-base", "mcp", "llm", "rag", "公众号", "知识库"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "playwright>=1.40.0",
     "jieba>=0.42.0",
@@ -25,9 +39,25 @@ dependencies = [
 mcp = [
     "mcp[cli]>=1.3",
 ]
+value-check = [
+    "anthropic>=0.39.0",
+]
+all = [
+    "mcp[cli]>=1.3",
+    "anthropic>=0.39.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/careycao/wechat-to-kb"
+Repository = "https://github.com/careycao/wechat-to-kb"
+Issues = "https://github.com/careycao/wechat-to-kb/issues"
 
 [project.scripts]
 wechat-to-kb-mcp = "mcp_server.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
+exclude = ["tests*", "scratch*"]
+
+[tool.setuptools]
+py-modules = ["unified_collector", "feishu_sync"]
