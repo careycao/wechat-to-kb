@@ -8,6 +8,9 @@ startCommand:
         KB_ROOT: config.kbRoot || "",
         KB_NON_INTERACTIVE: "1",
         KB_HEADLESS: config.headless ? "1" : "0",
+        KB_ENRICH: config.enrich ? "1" : "0",
+        KB_WIKILINKS: config.wikilinks ? "1" : "0",
+        ...(config.enrichModel ? { KB_ENRICH_MODEL: config.enrichModel } : {}),
         ...(config.anthropicApiKey ? { ANTHROPIC_API_KEY: config.anthropicApiKey } : {})
       }
     })
@@ -22,6 +25,17 @@ configSchema:
       type: boolean
       description: "是否以无头模式运行 Playwright 浏览器（服务器/后台场景建议开启）"
       default: false
+    enrich:
+      type: boolean
+      description: "开启两步 CoT LLM 增强入库（生成 summary / concepts / related 字段）。需要 Claude Code CLI 或 ANTHROPIC_API_KEY"
+      default: false
+    wikilinks:
+      type: boolean
+      description: "开启后在正文末尾追加 [[wikilinks]] 格式的相关文章区块（配合 Obsidian 使用）"
+      default: false
+    enrichModel:
+      type: string
+      description: "LLM 增强使用的模型（默认 claude-haiku-4-5-20251001）。例：claude-sonnet-4-6"
     anthropicApiKey:
       type: string
-      description: "Anthropic API Key（可选）。用于 import_local_file 的 AI 价值评估；已安装 Claude Code CLI 则无需填写"
+      description: "Anthropic API Key（可选）。用于 LLM 增强和 import_local_file 的 AI 价值评估；已安装 Claude Code CLI 则无需填写"

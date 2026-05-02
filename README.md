@@ -61,6 +61,15 @@ related:
 
 **认证**：与本地 PDF 价值评估相同，默认走本机 `claude` CLI（Claude Code），无需额外 API Key。
 
+**相关环境变量：**
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `KB_ENRICH` | `1`（run.sh）/ 需手动设（MCP） | 开启两步 CoT 增强 |
+| `KB_ENRICH_MODEL` | `claude-haiku-4-5-20251001` | 指定增强使用的模型，如 `claude-sonnet-4-6` |
+| `KB_WIKILINKS` | `0` | 开启后在正文末尾追加 `[[wikilinks]]` 格式的相关文章区块 |
+
+
 ---
 
 ## MCP Server（推荐新用户）
@@ -76,6 +85,7 @@ uvx --from 'wechat-to-kb[mcp]' wechat-to-kb-mcp
 # 方式二：已 clone 本项目的用户
 pip install -e ".[mcp]"
 ```
+
 
 ### 配置 Claude Desktop
 
