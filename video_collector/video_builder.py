@@ -206,7 +206,7 @@ def run(
         writer = writers[kb_key]
         kb = KB_BY_KEY[kb_key]
 
-        if skip_existing and writer.already_exists(title):
+        if skip_existing and writer.already_exists(title, url=record.canonical_url):
             logger.info("已存在，跳过: %s", title[:50])
             skipped += 1
             continue

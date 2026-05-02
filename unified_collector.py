@@ -192,7 +192,7 @@ async def run_urls(
 
                 writer = writers[kb_key]
                 kb = KB_BY_KEY[kb_key]
-                if skip_existing and writer.already_exists(title):
+                if skip_existing and writer.already_exists(title, url=data.get("url", "")):
                     print(f"已存在，跳过：{title[:60]}")
                     continue
 

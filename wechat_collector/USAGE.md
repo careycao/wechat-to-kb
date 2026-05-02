@@ -5,10 +5,16 @@
 ## 常用命令
 
 ```bash
-cd ~/.openclaw/wechat-to-kb/wechat_collector
+cd ~/.openclaw/wechat-to-kb
 
-# 保存公众号文章
+# 保存公众号文章（通过顶层入口，默认开启 LLM 增强）
 ./run.sh "https://mp.weixin.qq.com/s/xxxxx"
+
+# 跳过 LLM 增强（网络不好或快速入库时）
+./run.sh --no-enrich "https://mp.weixin.qq.com/s/xxxxx"
+
+# 强制覆盖已存在的文章（如需重新增强旧文章）
+./run.sh --no-skip "https://mp.weixin.qq.com/s/xxxxx"
 
 # 批量保存
 ./run.sh -f urls.txt

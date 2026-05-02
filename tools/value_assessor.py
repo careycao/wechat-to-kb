@@ -58,6 +58,9 @@ class ValueAssessment:
     personal_relevance: int           # 0-10
     verdict: str                      # keep | review | low-value
     reason: str                       # 中文 1-2 句
+    # verdict=review 时填充：建议处置动作 & 补充搜索建议
+    suggested_action: str = ""
+    search_queries: list[str] = field(default_factory=list)
     model: str = _DEFAULT_MODEL
     # 元数据：便于调试
     error: str = ""                   # 非空表示 API/解析异常
@@ -116,10 +119,18 @@ _SYSTEM_PROMPT_TEMPLATE = """\
 
 reason：用一两句中文说明判断依据，先说结论后说理由。
 
+当 verdict="review" 时，额外填写：
+- suggested_action：处置建议，一句话，例如"确认时效性后入库"/"拆分为两个主题"/"检查是否有更新版本"
+- search_queries：1-3 个补充搜索建议（字符串列表），帮助人工核实关键论点
+
 **严格要求**：只返回一个 JSON 对象，不要任何前后说明、不要 Markdown 代码块。\
-JSON 格式示例：
+verdict="keep"/"low-value" 时的格式示例：
 {{"topic_decay": 8, "ai_displacement": 7, "timelessness": 9, "personal_relevance": 8, \
 "verdict": "keep", "reason": "...."}}
+verdict="review" 时的格式示例：
+{{"topic_decay": 5, "ai_displacement": 6, "timelessness": 5, "personal_relevance": 7, \
+"verdict": "review", "reason": "....", "suggested_action": "确认时效性后入库", \
+"search_queries": ["搜索词1", "搜索词2"]}}
 """
 
 
@@ -220,6 +231,14 @@ def _normalize_assessment(data: dict, model: str) -> ValueAssessment:
 
     reason = str(data.get("reason", "")).strip() or "（模型未给出 reason）"
 
+    suggested_action = ""
+    search_queries: list[str] = []
+    if verdict == "review":
+        suggested_action = str(data.get("suggested_action", "")).strip()
+        raw_queries = data.get("search_queries") or []
+        if isinstance(raw_queries, list):
+            search_queries = [str(q).strip() for q in raw_queries if q]
+
     return ValueAssessment(
         topic_decay=_score("topic_decay"),
         ai_displacement=_score("ai_displacement"),
@@ -227,6 +246,8 @@ def _normalize_assessment(data: dict, model: str) -> ValueAssessment:
         personal_relevance=_score("personal_relevance"),
         verdict=verdict,
         reason=reason,
+        suggested_action=suggested_action,
+        search_queries=search_queries,
         model=model,
     )
 

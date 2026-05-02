@@ -38,6 +38,29 @@ wechat-to-kb 的目标是把这些全部打通：公众号、全网网页、视�
 
 所有内容统一存储为**本地文本文件**，按知识库分类管理，可直接接入任何支持本地文件的 AI 工具（OpenClaw、Cursor、Obsidian、RAG 等）。
 
+### LLM 增强入库（默认开启）
+
+每篇文章入库时经过两步 CoT 处理，生成结构化 frontmatter：
+
+```yaml
+---
+title: 文章标题
+url: https://mp.weixin.qq.com/s/xxxxx   # 已自动去除 UTM / 追踪参数
+date: 2026-05-01
+summary: 3 句以内的核心观点摘要
+concepts:
+  - 核心概念 A
+  - 核心概念 B
+related:
+  - KB 内相关文章标题 1
+  - KB 内相关文章标题 2
+---
+```
+
+`related` 字段与 Obsidian Graph View 兼容，可在知识图谱中直接看到文章之间的关联。若开启 `KB_WIKILINKS=1`，正文末尾还会追加 `[[文章标题]]` 语法的相关文章区块。
+
+**认证**：与本地 PDF 价值评估相同，默认走本机 `claude` CLI（Claude Code），无需额外 API Key。
+
 ---
 
 ## MCP Server（推荐新用户）
@@ -66,7 +89,8 @@ pip install -e ".[mcp]"
       "args": ["--from", "wechat-to-kb[mcp]", "wechat-to-kb-mcp"],
       "env": {
         "KB_ROOT": "/Users/你的用户名/knowledge_base",
-        "KB_NON_INTERACTIVE": "1"
+        "KB_NON_INTERACTIVE": "1",
+        "KB_ENRICH": "1"
       }
     }
   }
@@ -85,7 +109,8 @@ pip install -e ".[mcp]"
       "args": ["--from", "wechat-to-kb[mcp]", "wechat-to-kb-mcp"],
       "env": {
         "KB_ROOT": "/Users/你的用户名/knowledge_base",
-        "KB_NON_INTERACTIVE": "1"
+        "KB_NON_INTERACTIVE": "1",
+        "KB_ENRICH": "1"
       }
     }
   }
@@ -251,7 +276,7 @@ cd ~/.openclaw/wechat-to-kb
 ```bash
 cd ~/.openclaw/wechat-to-kb
 
-# 公众号文章
+# 公众号文章（默认开启 LLM 增强）
 ./run.sh "https://mp.weixin.qq.com/s/xxxxx"
 
 # 普通网页
@@ -263,6 +288,12 @@ cd ~/.openclaw/wechat-to-kb
 # 批量
 ./run.sh -f urls.txt
 
+# 跳过 LLM 增强（网络不好或批量快速入库时）
+./run.sh --no-enrich "https://mp.weixin.qq.com/s/xxxxx"
+
+# 强制覆盖已存在的文章（如需重新增强旧文章）
+./run.sh --no-skip "https://mp.weixin.qq.com/s/xxxxx"
+
 # 仅对公众号尝试抓评论
 ./run.sh --comments "https://mp.weixin.qq.com/s/xxxxx"
 ```
@@ -270,6 +301,7 @@ cd ~/.openclaw/wechat-to-kb
 说明：
 - 顶层入口会自动分流到 `wechat_collector` / `video_collector` / `web_collector`
 - 这是最适合给聊天工具配置的入口，后续内部结构继续调整也不影响外部调用
+- 默认开启 LLM 两步 CoT 增强，入库的 `.md` 文件会自动生成 `summary`、`concepts`、`related` 字段；加 `--no-enrich` 可跳过
 
 ### wechat_collector（公众号）
 
@@ -380,8 +412,10 @@ cd rss_daily && ./run.sh
 ~/knowledge_base/
 ├── AI_KnowBase/
 │   ├── README.md               ← 自动生成的文章索引（标题、摘要、关键词）
+│   ├── purpose.md              ← 知识库意图声明（首次初始化自动创建，可手动完善）
+│   ├── _url_index.json         ← URL 去重索引（归一化后的 URL → 标题/路径/日期）
 │   ├── 01-战略与框架/
-│   │   ├── 文章标题.md
+│   │   ├── 文章标题.md         ← frontmatter 含 summary / concepts / related
 │   │   └── 文章标题.html
 │   ├── 05-AI Coding/
 │   │   ├── 另一篇文章.md

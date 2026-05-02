@@ -18,6 +18,18 @@ from common.kb_config import ALL_KBS, KB_BY_KEY, KBConfig
 CONFLICT_THRESHOLD = 1
 
 
+def load_purpose(kb: KBConfig) -> str:
+    """Return the content of purpose.md for this KB, or empty string if absent."""
+    purpose_path = kb.path / "purpose.md"
+    try:
+        if purpose_path.exists():
+            return purpose_path.read_text(encoding="utf-8").strip()
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).debug("无法读取 purpose.md (%s): %s", purpose_path, exc)
+    return ""
+
+
 def _title_bonus(title: str, keywords: list[str]) -> int:
     if not title:
         return 0
@@ -35,7 +47,12 @@ def score_kb(text: str, title: str, kb: KBConfig) -> tuple[int, str]:
 
     title = (title or "").strip()
     body = (text or "").strip()
-    scored_text = f"{title}\n{title}\n{title}\n{body}" if title else body
+
+    # Boost scoring context with purpose.md when available
+    purpose = load_purpose(kb)
+    scored_text = f"{title}\n{title}\n{title}\n{body}"
+    if purpose:
+        scored_text = scored_text + "\n" + purpose
     words = set(jieba.lcut(scored_text))
 
     best_score = 0

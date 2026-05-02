@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -11,6 +13,7 @@ from markdownify import markdownify as md_convert
 
 from common.kb_config import KBConfig
 from common.text_processing import safe_filename
+from common.url_utils import normalize_url
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +24,32 @@ class KBWriter:
     def __init__(self, kb: KBConfig):
         self.kb = kb
         self.stage_dir = kb.path / "_stage"
+        self._url_index_path = kb.path / "_url_index.json"
+        self._url_index: dict[str, dict] = self._load_url_index()
         self._ensure_dirs()
+
+    def _load_url_index(self) -> dict[str, dict]:
+        if not self._url_index_path.exists():
+            return {}
+        try:
+            return json.loads(self._url_index_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            logger.warning("URL 索引读取失败（%s），重建。%s", self._url_index_path, exc)
+            return {}
+
+    def _save_url_index(self) -> None:
+        self._url_index_path.parent.mkdir(parents=True, exist_ok=True)
+        self._url_index_path.write_text(
+            json.dumps(self._url_index, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
     def _ensure_dirs(self) -> None:
         self.kb.path.mkdir(parents=True, exist_ok=True)
         self.stage_dir.mkdir(parents=True, exist_ok=True)
         for name in self.kb.ordered_prefixed:
             (self.kb.path / name).mkdir(parents=True, exist_ok=True)
+        self.ensure_purpose_md()
 
     def _stage_paths(self, title: str) -> tuple[Path, Path]:
         safe = safe_filename(title)
@@ -39,7 +61,12 @@ class KBWriter:
         category_dir = self.kb.path / dir_name
         return category_dir / f"{safe}.html", category_dir / f"{safe}.md"
 
-    def already_exists(self, title: str) -> bool:
+    def already_exists(self, title: str, url: str = "") -> bool:
+        """Check if article already exists by URL index (preferred) or title/filename."""
+        if url:
+            norm = normalize_url(url)
+            if norm and norm in self._url_index:
+                return True
         for category in self.kb.category_order:
             html_path, md_path = self._category_paths(category, title)
             if html_path.exists() or md_path.exists():
@@ -60,11 +87,12 @@ class KBWriter:
 
     def save_stage(self, data: dict) -> tuple[Path, Path]:
         title = data["title"]
-        url = data.get("url", "")
+        raw_url = data.get("url", "")
+        norm_url = normalize_url(raw_url) if raw_url else raw_url
         html_path, md_path = self._stage_paths(title)
 
         # 保留 HTML 作为原始存档
-        url_comment = f"<!-- original_url: {url} -->"
+        url_comment = f"<!-- original_url: {raw_url} -->"
         full_html = (
             '<!DOCTYPE html><html><head><meta charset="utf-8">'
             f"<title>{title}</title>{url_comment}</head>"
@@ -72,12 +100,55 @@ class KBWriter:
         )
         html_path.write_text(full_html, encoding="utf-8")
 
-        # 主文件改为 .md，供 AI 检索和 Obsidian 查看
-        md_content = self._html_to_md(data["html"], title, url)
+        # 主文件改为 .md，供 AI 检索和 Obsidian 查看（frontmatter 存归一化 URL）
+        md_content = self._html_to_md(data["html"], title, norm_url or raw_url)
+
+        # 可选两步 CoT 增强（KB_ENRICH=1 开启）
+        if os.environ.get("KB_ENRICH", "").strip() == "1":
+            try:
+                from common.kb_enricher import enrich_with_llm
+                md_content = enrich_with_llm(
+                    md_content=md_content,
+                    plain_text=data.get("plain_text", ""),
+                    title=title,
+                    kb=self.kb,
+                )
+                logger.info("CoT 增强完成: %s", title[:50])
+            except Exception as exc:
+                logger.warning("CoT 增强失败，保留原始 MD。%s", exc)
+
         md_path.write_text(md_content, encoding="utf-8")
+
+        # 更新 URL 去重索引
+        if norm_url:
+            self._url_index[norm_url] = {
+                "title": title,
+                "path": str(md_path),
+                "date": datetime.now().strftime("%Y-%m-%d"),
+            }
+            self._save_url_index()
 
         logger.info("已暂存: %s", title[:50])
         return html_path, md_path
+
+    def ensure_purpose_md(self) -> Path:
+        """Create a purpose.md template in the KB root if one doesn't exist."""
+        purpose_path = self.kb.path / "purpose.md"
+        if purpose_path.exists():
+            return purpose_path
+        template = (
+            f"# {self.kb.name} Purpose\n\n"
+            "## 为什么建立这个知识库\n\n"
+            f"{self.kb.description}\n\n"
+            "## 核心问题\n\n"
+            "- （请填写：这个知识库主要用于回答什么问题？）\n\n"
+            "## 范围边界\n\n"
+            "- 收录：（请填写值得收录的内容类型）\n"
+            "- 排除：（请填写不值得收录的内容类型）\n"
+        )
+        purpose_path.write_text(template, encoding="utf-8")
+        logger.info("已创建 purpose.md 模板: %s", purpose_path)
+        return purpose_path
 
     def classify_and_move(self, title: str, category: str) -> str:
         html_stage, md_stage = self._stage_paths(title)
