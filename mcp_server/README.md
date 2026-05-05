@@ -1,10 +1,11 @@
 # wechat-to-kb MCP Server
 
-把微信公众号文章、网页、视频、本地文档一句话保存到本地知识库。
+采集和管理本地知识库。支持"只读不存"和"读取并入库"两种模式。
 
 在 Claude Desktop、Cursor、Cowork 等任何支持 MCP 的 AI 工具中直接说：
 
-> "帮我把这篇文章存到知识库 https://mp.weixin.qq.com/s/xxxxx"
+> "帮我读一下这篇文章 https://mp.weixin.qq.com/s/xxxxx"（只读）
+> "帮我把这篇文章存到知识库 https://mp.weixin.qq.com/s/xxxxx"（入库）
 
 ---
 
@@ -12,6 +13,7 @@
 
 | 工具 | 说明 |
 |------|------|
+| `fetch_url` | **只读**：抓取公众号文章或网页正文并返回，不保存到知识库 |
 | `save_url` | 保存公众号文章、网页、视频（自动识别类型） |
 | `save_urls_batch` | 批量保存多个链接 |
 | `import_local_file` | 导入本地 PDF / PPTX / DOCX |
@@ -102,6 +104,8 @@ uvx --from wechat-to-kb wechat-to-kb-mcp
 在 Claude 对话中直接说：
 
 ```
+读一下这篇文章，总结要点：https://mp.weixin.qq.com/s/xxxxx
+
 保存这篇文章到知识库：https://mp.weixin.qq.com/s/xxxxx
 
 把这几篇文章都存一下：

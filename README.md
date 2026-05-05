@@ -135,7 +135,7 @@ pip install -e ".[mcp]"
 帮我导入 ~/Downloads/行业报告.pdf 到知识库
 ```
 
-提供的工具：`save_url` / `save_urls_batch` / `import_local_file` / `list_knowledge_bases` / `rebuild_index`
+提供的工具：`fetch_url`（只读）/ `save_url` / `save_urls_batch` / `import_local_file` / `list_knowledge_bases` / `rebuild_index`
 
 详细说明见 [mcp_server/README.md](mcp_server/README.md)。
 

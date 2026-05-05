@@ -5,6 +5,7 @@ mcp_server/server.py — wechat-to-kb MCP Server
 任何 MCP 兼容客户端直接调用，无需了解内部实现。
 
 工具列表：
+  fetch_url         — 读取 URL 正文并返回（不保存），用于"只是让 Claude 读一下"的场景
   save_url          — 保存单篇内容（公众号 / 网页 / 视频，自动分流）
   save_urls_batch   — 批量保存 URL 列表
   import_local_file — 导入本地 PDF / PPTX / DOCX
@@ -33,15 +34,74 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP(
     "wechat-to-kb",
     instructions=(
-        "把微信公众号文章、网页、视频、本地文档统一保存到本地知识库。\n"
-        "使用 list_knowledge_bases 查看可用的知识库和分类，\n"
-        "再用 save_url 保存内容。"
+        "采集和管理本地知识库。\n"
+        "只是想读一篇文章？用 fetch_url，不保存任何文件。\n"
+        "想保存到知识库？用 save_url 或 save_urls_batch。\n"
+        "使用 list_knowledge_bases 查看可用的知识库和分类。"
     ),
 )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 工具 1：save_url
+# 工具 1：fetch_url
+# ─────────────────────────────────────────────────────────────────────────────
+
+@mcp.tool()
+async def fetch_url(url: str, max_chars: int = 8000) -> str:
+    """
+    读取 URL 正文并返回，不保存到知识库。
+
+    适合"只是想让 Claude 读一下"的场景：分析文章、提取要点、回答问题等。
+    支持微信公众号文章（mp.weixin.qq.com）和普通网页。
+
+    参数：
+      url        内容链接
+      max_chars  返回正文的最大字符数，默认 8000（约 4000 汉字）。设为 0 则返回全文。
+
+    返回：「# 标题\\n\\n正文」格式的字符串，或失败原因。
+    """
+    url = url.strip()
+    if not url:
+        return "URL 不能为空"
+
+    result: dict | None = None
+
+    if "mp.weixin.qq.com/" in url:
+        from wechat_collector.article_fetcher import _lightweight_fetch, ArticleFetcher
+
+        result, reason = _lightweight_fetch(url)
+        if not result:
+            fetcher = ArticleFetcher()
+            try:
+                await fetcher.init()
+                result = await fetcher.fetch(url)
+            finally:
+                await fetcher.close()
+    else:
+        from web_collector.page_fetcher import PageFetcher
+
+        fetcher = PageFetcher()
+        try:
+            await fetcher.init()
+            result = await fetcher.fetch(url)
+        finally:
+            await fetcher.close()
+
+    if not result:
+        return f"无法获取内容，请确认链接是否有效：{url}"
+
+    title = result.get("title", "（无标题）")
+    plain_text = result.get("plain_text", "")
+    total_chars = len(plain_text)
+
+    if max_chars and total_chars > max_chars:
+        plain_text = plain_text[:max_chars] + f"\n\n…（已截断，原文共 {total_chars} 字）"
+
+    return f"# {title}\n\n{plain_text}"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 工具 2：save_url
 # ─────────────────────────────────────────────────────────────────────────────
 
 @mcp.tool()
@@ -93,7 +153,7 @@ async def save_url(url: str, kb: str = "") -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 工具 2：save_urls_batch
+# 工具 3：save_urls_batch
 # ─────────────────────────────────────────────────────────────────────────────
 
 @mcp.tool()
@@ -140,7 +200,7 @@ async def save_urls_batch(urls: list[str], kb: str = "") -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 工具 3：import_local_file
+# 工具 4：import_local_file
 # ─────────────────────────────────────────────────────────────────────────────
 
 @mcp.tool()
@@ -226,7 +286,7 @@ def import_local_file(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 工具 4：list_knowledge_bases
+# 工具 5：list_knowledge_bases
 # ─────────────────────────────────────────────────────────────────────────────
 
 @mcp.tool()
@@ -252,7 +312,7 @@ def list_knowledge_bases() -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 工具 5：rebuild_index
+# 工具 6：rebuild_index
 # ─────────────────────────────────────────────────────────────────────────────
 
 @mcp.tool()
