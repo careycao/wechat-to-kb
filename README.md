@@ -22,7 +22,7 @@ wechat-to-kb 的目标是把这些全部打通：公众号、全网网页、视�
 
 ---
 
-## 包含九个模块
+## 包含十个模块
 
 | 模块 | 功能 |
 |---|---|
@@ -34,6 +34,7 @@ wechat-to-kb 的目标是把这些全部打通：公众号、全网网页、视�
 | `video_collector` | 视频转文本，支持 B 站、YouTube、小红书视频号等（yt-dlp + 字幕提取） |
 | `xhs_collector` | 小红书收藏夹批量入库 |
 | `rss_daily` | RSS 订阅聚合，微信公众号文章自动归档 |
+| `platform_collector` | **平台雷达**：自动抓取公开热榜（HackerNews、GitHub Trending 等），AI 摘要生成每日 Inbox 摘要，不写入知识库 |
 | `tools/import_local_docs.py` | 本地 PDF 批量入库（MarkItDown 抽取 + Claude 价值评估），入口脚本 `run_import_local_docs.sh` |
 
 所有内容统一存储为**本地文本文件**，按知识库分类管理，可直接接入任何支持本地文件的 AI 工具（OpenClaw、Cursor、Obsidian、RAG 等）。
@@ -383,6 +384,45 @@ cp rss_daily/rss_config.example.yaml rss_daily/config.yaml
 cd rss_daily && ./run.sh
 ```
 
+### platform_collector（平台雷达 + 每日摘要）
+
+**定位**：信息雷达，不是知识库采集器。热榜内容时效性强，直接入库只会增加噪音；这个模块的正确用法是每天定时跑一次，用 AI 做聚合摘要，生成一份「今日技术动态」放进 `Inbox/` 看完即走，真正值得留下的内容再手动入库。
+
+架构上分两层：
+- `autocli_fetcher.py` — 调用直连公开 API 抓取热榜（HackerNews Firebase API、GitHub Search API），带多接口 fallback 和 SSL 降级
+- `digest_builder.py` — 对抓取结果调用 LLM（默认 DeepSeek）做聚合摘要，输出结构化 Markdown
+
+```bash
+cd platform_collector
+
+# 生成今日摘要（抓取 HN + GitHub → DeepSeek 摘要 → 写入 Inbox/daily_digest/）
+python digest_builder.py
+
+# Dry-run（只打印，不写文件）
+python digest_builder.py --dry-run
+
+# 跳过 AI 摘要，只输出原始热榜
+python digest_builder.py --no-ai
+
+# 只抓取并写入 KB _stage/（不生成摘要，用于存档场景）
+python platform_collector.py hackernews_hot github_trending --dry-run
+
+# 列出所有可用任务
+python platform_collector.py --list
+```
+
+**配置 DeepSeek API Key**（摘要功能依赖）：
+
+```bash
+echo 'DEEPSEEK_API_KEY=你的key' >> ~/DevProjects/wechat-to-kb/.env
+```
+
+**网络说明**：直连 API（Firebase、GitHub）需要代理可访问国际网络。知乎等国内聚合 API 稳定性较低，已从默认任务中移除。如需在代理环境下使用，确保设置了 `HTTPS_PROXY` 环境变量。
+
+输出文件位置：`~/knowledge_base/Inbox/daily_digest/YYYY-MM-DD.md`
+
+---
+
 ### tools/import_local_docs.py（本地 PDF 批量入库）
 
 把电脑里散落的 PDF（培训资料、行业报告、历史文档）批量灌进知识库，做了三件事：
@@ -434,6 +474,10 @@ cd rss_daily && ./run.sh
 ├── Engineering_KnowBase/
 ├── Management_KnowBase/
 ├── PM_KnowBase/
+├── Inbox/
+│   └── daily_digest/           ← platform_collector 每日摘要（看完即走，不入 KB）
+│       ├── 2026-05-06.md
+│       └── 2026-05-07.md
 └── Archive/
     └── LocalDocs/
         ├── README.md           ← 本地文档入库流程 + frontmatter 字段速查
@@ -452,6 +496,7 @@ cd rss_daily && ./run.sh
 - yt-dlp（视频字幕提取，video_collector 使用）
 - MarkItDown + pypdf（本地 PDF 抽取，`tools/import_local_docs.py` 使用，由 `run_import_local_docs.sh` 自动装）
 - Claude Code CLI（可选，本地 PDF 价值评估默认走它；未安装时可回退 `ANTHROPIC_API_KEY` 或加 `--no-value-check`）
+- DeepSeek API Key（可选，`platform_collector/digest_builder.py` 的 AI 摘要功能需要；不配置则跳过摘要，只输出原始热榜）
 
 ---
 
