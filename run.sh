@@ -49,12 +49,14 @@ fi
 
 if [[ $# -eq 0 ]]; then
   echo "用法:"
-  echo "  ./run.sh <URL>                  自动分流保存内容链接（默认开启 LLM 增强）"
+  echo "  ./run.sh <URL>                  自动分流保存内容链接（默认开启 LLM 增强 + LLM 路由）"
   echo "  ./run.sh <URL1> <URL2> ...      批量保存"
   echo "  ./run.sh -f urls.txt            从文件批量保存"
   echo "  ./run.sh --kb ai <URL>          强制指定知识库"
   echo "  ./run.sh --no-enrich <URL>      跳过 LLM 增强（网络不好或快速入库时）"
+  echo "  ./run.sh --no-llm-route <URL>   跳过 LLM 路由，仅用关键词匹配分流"
   echo "  ./run.sh --no-skip <URL>        强制覆盖已存在的文章"
+  echo "  ./run.sh --delete <URL>         删除指定文章（文件 + 索引记录，所有知识库中搜索）"
   echo "  ./run.sh --comments <URL>       公众号文章额外尝试抓评论"
   echo "  ./run.sh --reindex              仅重建索引"
   echo "  ./run.sh --login                刷新微信登录 session（实验性，暂对付费文章无效）"
@@ -63,13 +65,20 @@ fi
 
 # 默认开启 LLM 增强；--no-enrich 可临时关闭
 export KB_ENRICH=1
+# 默认开启 LLM 路由（更准确的知识库分流）；--no-llm-route 可临时关闭
+export KB_ROUTE_LLM=1
 PASSTHROUGH_ARGS=()
-for arg in "$@"; do
+i=1
+while [[ $i -le $# ]]; do
+  arg="${!i}"
   if [[ "$arg" == "--no-enrich" ]]; then
     KB_ENRICH=0
+  elif [[ "$arg" == "--no-llm-route" ]]; then
+    KB_ROUTE_LLM=0
   else
     PASSTHROUGH_ARGS+=("$arg")
   fi
+  ((i++))
 done
 
 exec .venv/bin/python3 unified_collector.py "${PASSTHROUGH_ARGS[@]}"

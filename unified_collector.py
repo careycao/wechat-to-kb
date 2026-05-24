@@ -21,8 +21,8 @@ if str(VIDEO_COLLECTOR_DIR) not in sys.path:
 
 from common.kb_config import ALL_KBS, KB_BY_KEY, warn_if_using_default_config
 from common.kb_indexing import rebuild_index
-from common.kb_routing import pick_highest_score_route, prompt_user_choice, route, score_kb
-from common.kb_storage import KBWriter
+from common.kb_routing import llm_route_category, llm_route_kb, pick_highest_score_route, prompt_user_choice, route, score_kb
+from common.kb_storage import KBWriter, delete_from_all_kbs
 from common.path_utils import load_urls_from_file, redact_url_for_log, sanitize_url_input
 from common.text_processing import extract_keywords_for_index
 from cookies import resolve_cookies_path
@@ -190,6 +190,28 @@ async def run_urls(
                         else:
                             kb_key, category = prompt_user_choice(title, scores)
 
+                # LLM KB 路由：覆盖关键词选出的 KB（KB_ROUTE_LLM=1 时启用）
+                llm_kb_key = llm_route_kb(plain_text, title)
+                if llm_kb_key and llm_kb_key != kb_key:
+                    old_kb_name = KB_BY_KEY[kb_key].name
+                    new_kb_name = KB_BY_KEY[llm_kb_key].name
+                    print(f"[LLM KB路由] {old_kb_name} → {new_kb_name}")
+                    kb_key = llm_kb_key
+                    # KB 变了，子分类需重新推断
+                    _, category = score_kb(plain_text, title, KB_BY_KEY[kb_key])
+                    if not category:
+                        category = "未分类"
+
+                # LLM 子分类优化：KB 确定后，用 LLM 精选子分类（KB_ROUTE_LLM=1 时启用）
+                llm_category = llm_route_category(plain_text, title, KB_BY_KEY[kb_key])
+                if llm_category:
+                    kb = KB_BY_KEY[kb_key]
+                    old_prefixed = kb.raw_to_prefixed.get(category, category)
+                    new_prefixed = kb.raw_to_prefixed.get(llm_category, llm_category)
+                    if llm_category != category:
+                        print(f"[LLM路由] {old_prefixed} → {new_prefixed}")
+                    category = llm_category
+
                 writer = writers[kb_key]
                 kb = KB_BY_KEY[kb_key]
                 if skip_existing and writer.already_exists(title, url=data.get("url", "")):
@@ -233,6 +255,7 @@ def main() -> None:
         choices=list(KB_BY_KEY.keys()),
         help="强制指定目标知识库",
     )
+    parser.add_argument("--delete", metavar="URL", default=None, help="删除指定 URL 的文章（文件 + 索引记录），在所有知识库中搜索")
     parser.add_argument("--reindex", action="store_true", help="仅重建索引，不下载")
     parser.add_argument("--login", action="store_true", help="打开浏览器刷新微信 session（实验性，暂对付费文章无效）")
     parser.add_argument(
@@ -254,6 +277,15 @@ def main() -> None:
 
     if args.login:
         asyncio.run(login_wechat_session())
+        return
+
+    if args.delete:
+        url = args.delete.strip()
+        found = delete_from_all_kbs(url)
+        if found:
+            print(f"✅ 已删除：{url}")
+        else:
+            print(f"⚠️  未找到该 URL 的记录：{url}")
         return
 
     if args.reindex:

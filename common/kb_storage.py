@@ -150,6 +150,37 @@ class KBWriter:
         logger.info("已创建 purpose.md 模板: %s", purpose_path)
         return purpose_path
 
+    def delete_article(self, url: str) -> bool:
+        """按 URL 删除已入库的文章文件（.md + .html）并清除索引记录。
+
+        Returns True if an entry was found and removed, False otherwise.
+        """
+        from common.url_utils import normalize_url
+
+        norm = normalize_url(url) if url else ""
+        entry = self._url_index.pop(norm, None) if norm else None
+
+        if entry is None:
+            return False
+
+        # 删除索引里记录的 .md 文件及同名 .html
+        md_path = Path(entry["path"])
+        html_path = md_path.with_suffix(".html")
+        deleted: list[str] = []
+        for p in (md_path, html_path):
+            if p.exists():
+                p.unlink()
+                deleted.append(p.name)
+
+        self._save_url_index()
+        logger.info(
+            "已删除 [%s]: %s（文件: %s）",
+            self.kb.name,
+            entry.get("title", ""),
+            ", ".join(deleted) if deleted else "无对应文件",
+        )
+        return True
+
     def classify_and_move(self, title: str, category: str) -> str:
         html_stage, md_stage = self._stage_paths(title)
         category_html, category_md = self._category_paths(category, title)
@@ -166,3 +197,18 @@ class KBWriter:
         prefixed = self.kb.raw_to_prefixed.get(category, category)
         logger.info("已归类 [%s] -> %s", prefixed, title[:50])
         return category
+
+
+def delete_from_all_kbs(url: str) -> bool:
+    """在所有知识库中按 URL 搜索并删除文章（文件 + 索引记录）。
+
+    Returns True if found and deleted in at least one KB, False if not found anywhere.
+    """
+    from common.kb_config import ALL_KBS
+
+    found = False
+    for kb in ALL_KBS:
+        writer = KBWriter(kb)
+        if writer.delete_article(url):
+            found = True
+    return found

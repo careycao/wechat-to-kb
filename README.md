@@ -69,6 +69,8 @@ related:
 | `KB_ENRICH` | `1`（run.sh）/ 需手动设（MCP） | 开启两步 CoT 增强 |
 | `KB_ENRICH_MODEL` | `claude-haiku-4-5-20251001` | 指定增强使用的模型，如 `claude-sonnet-4-6` |
 | `KB_WIKILINKS` | `0` | 开启后在正文末尾追加 `[[wikilinks]]` 格式的相关文章区块 |
+| `KB_ROUTE_LLM` | `1`（run.sh）/ 需手动设（MCP） | 开启 LLM 智能路由，置信度低时用 LLM 判断目标知识库，避免关键词匹配误分类 |
+| `KB_ROUTE_MODEL` | `claude-haiku-4-5-20251001` | 指定路由使用的模型 |
 
 
 ---
@@ -302,8 +304,14 @@ cd ~/.openclaw/wechat-to-kb
 # 跳过 LLM 增强（网络不好或批量快速入库时）
 ./run.sh --no-enrich "https://mp.weixin.qq.com/s/xxxxx"
 
+# 跳过 LLM 路由，仅用关键词匹配分流（省 token / 网络差时）
+./run.sh --no-llm-route "https://mp.weixin.qq.com/s/xxxxx"
+
 # 强制覆盖已存在的文章（如需重新增强旧文章）
 ./run.sh --no-skip "https://mp.weixin.qq.com/s/xxxxx"
+
+# 删除已入库文章（同时清除文件和索引记录，在所有知识库中搜索）
+./run.sh --delete "https://mp.weixin.qq.com/s/xxxxx"
 
 # 仅对公众号尝试抓评论
 ./run.sh --comments "https://mp.weixin.qq.com/s/xxxxx"
@@ -313,6 +321,7 @@ cd ~/.openclaw/wechat-to-kb
 - 顶层入口会自动分流到 `wechat_collector` / `video_collector` / `web_collector`
 - 这是最适合给聊天工具配置的入口，后续内部结构继续调整也不影响外部调用
 - 默认开启 LLM 两步 CoT 增强，入库的 `.md` 文件会自动生成 `summary`、`concepts`、`related` 字段；加 `--no-enrich` 可跳过
+- 默认开启 LLM 路由（`KB_ROUTE_LLM=1`），分类置信度低时自动用 LLM 兜底判断，避免误分类；加 `--no-llm-route` 可退回纯关键词匹配
 
 ### wechat_collector（公众号）
 
