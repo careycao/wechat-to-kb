@@ -103,32 +103,38 @@ pip install -e ".[mcp]"
       "env": {
         "KB_ROOT": "/Users/你的用户名/knowledge_base",
         "KB_NON_INTERACTIVE": "1",
-        "KB_ENRICH": "1"
+        "KB_ENRICH": "1",
+        "KB_ROUTE_LLM": "1",
+        "KB_ROUTE_MODEL": "deepseek-v4-flash",
+        "DEEPSEEK_API_KEY": "你的DeepSeek Key（platform_collector 摘要功能可选）"
       }
     }
   }
 }
 ```
 
-### 配置 Cursor
+### 配置 Codex
 
-编辑 `~/.cursor/mcp.json`（不存在则新建）：
+编辑 `~/.codex/config.toml`，或通过 `codex mcp add` 命令添加后手动补全环境变量：
 
-```json
-{
-  "mcpServers": {
-    "wechat-to-kb": {
-      "command": "uvx",
-      "args": ["--from", "wechat-to-kb[mcp]", "wechat-to-kb-mcp"],
-      "env": {
-        "KB_ROOT": "/Users/你的用户名/knowledge_base",
-        "KB_NON_INTERACTIVE": "1",
-        "KB_ENRICH": "1"
-      }
-    }
-  }
-}
+```toml
+[[mcp_servers]]
+name = "wechat-to-kb"
+command = "uvx"
+args = ["--from", "wechat-to-kb[mcp]", "wechat-to-kb-mcp"]
+
+[mcp_servers.env]
+KB_ROOT = "/Users/你的用户名/knowledge_base"
+KB_NON_INTERACTIVE = "1"
+KB_ENRICH = "1"
+KB_ROUTE_LLM = "1"
+KB_ROUTE_MODEL = "deepseek-v4-flash"
+DEEPSEEK_API_KEY = "你的DeepSeek Key"
 ```
+
+配置后可通过 `codex mcp get wechat-to-kb` 校验变量是否生效；新开会话即可读到最新配置。
+
+> **注意**：`DEEPSEEK_API_KEY` 以明文存储在 `~/.codex/config.toml`，请勿将该文件提交到代码仓库。
 
 重启后，在对话中直接说：
 
@@ -197,7 +203,7 @@ AI 助手会自动判断文章分类、选择对应知识库，并返回保存�
 ### 方式三：终端命令行
 
 ```bash
-cd ~/.openclaw/wechat-to-kb
+cd ~/DevProjects/wechat-to-kb
 ./run.sh "https://mp.weixin.qq.com/s/xxxxxx"
 ./run.sh "https://example.com/article"
 ./run.sh "https://www.bilibili.com/video/BVxxxxx"
@@ -274,7 +280,7 @@ cp common/kb_config.example.py common/kb_config.local.py
 ### 2. 保存第一篇公众号文章
 
 ```bash
-cd ~/.openclaw/wechat-to-kb
+cd ~/DevProjects/wechat-to-kb
 ./run.sh "https://mp.weixin.qq.com/s/xxxxxx"
 ```
 
@@ -287,7 +293,7 @@ cd ~/.openclaw/wechat-to-kb
 ### 顶层统一入口（推荐给聊天工具 / 飞书 / OpenClaw）
 
 ```bash
-cd ~/.openclaw/wechat-to-kb
+cd ~/DevProjects/wechat-to-kb
 
 # 公众号文章（默认开启 LLM 增强）
 ./run.sh "https://mp.weixin.qq.com/s/xxxxx"
