@@ -71,8 +71,8 @@ def _load_external_config():
 def _default_config_values():
     ai_kb = KBConfig(
         key="ai",
-        name="AI_KnowBase",
-        path=_KB_ROOT / "AI_KnowBase",
+        name="01-AI_KnowBase",
+        path=_KB_ROOT / "01-AI_KnowBase",
         description="收集 AI 与技术相关的文章，涵盖工具、实践与前沿进展。",
         category_keywords={
             "工具与实践": ["工具", "实践", "教程", "使用", "案例", "落地"],
@@ -84,8 +84,8 @@ def _default_config_values():
     )
     engineering_kb = KBConfig(
         key="engineering",
-        name="Engineering_KnowBase",
-        path=_KB_ROOT / "Engineering_KnowBase",
+        name="02-Engineering_KnowBase",
+        path=_KB_ROOT / "02-Engineering_KnowBase",
         description="收集技术与工程领域的文章，涵盖架构、后端、DevOps 等方向。",
         category_keywords={
             "系统架构": ["架构", "微服务", "分布式", "高可用", "设计模式"],

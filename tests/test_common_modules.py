@@ -35,8 +35,8 @@ class CommonModulesTest(unittest.TestCase):
     def test_generate_readme_prefers_original_url_link(self):
         kb = KBConfig(
             key="ai",
-            name="AI_KnowBase",
-            path=Path("/tmp/AI_KnowBase"),
+            name="01-AI_KnowBase",
+            path=Path("/tmp/01-AI_KnowBase"),
             description="测试知识库。",
             category_keywords={"工具与方法": ["工具"], "未分类": []},
             category_order=["工具与方法", "未分类"],
@@ -45,8 +45,8 @@ class CommonModulesTest(unittest.TestCase):
             {
                 "category": "01-工具与方法",
                 "title": "测试文章",
-                "html_path": Path("/tmp/AI_KnowBase/01-工具与方法/测试文章.html"),
-                "txt_path": Path("/tmp/AI_KnowBase/01-工具与方法/测试文章.txt"),
+                "html_path": Path("/tmp/01-AI_KnowBase/01-工具与方法/测试文章.html"),
+                "txt_path": Path("/tmp/01-AI_KnowBase/01-工具与方法/测试文章.txt"),
                 "summary": "摘要",
                 "keywords": "关键词",
                 "original_url": "https://mp.weixin.qq.com/s/example",

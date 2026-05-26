@@ -110,19 +110,64 @@ class _CLIClient:
         self.messages = _CLIMessages()
 
 
+class _DeepSeekMessages:
+    _BASE_URL = "https://api.deepseek.com/v1/chat/completions"
+    _TIMEOUT = 60
+
+    def __init__(self, api_key: str):
+        self._api_key = api_key
+
+    def create(self, *, model: str, system: str = "", messages: list[dict], **_ignored):
+        import requests  # already in project deps
+
+        payload_messages: list[dict] = []
+        if system:
+            payload_messages.append({"role": "system", "content": system})
+        payload_messages.extend(messages)
+
+        resp = requests.post(
+            self._BASE_URL,
+            headers={
+                "Authorization": f"Bearer {self._api_key}",
+                "Content-Type": "application/json",
+            },
+            json={"model": model, "messages": payload_messages},
+            timeout=self._TIMEOUT,
+        )
+        resp.raise_for_status()
+        text = resp.json()["choices"][0]["message"]["content"]
+        return _CLIResponse(text)
+
+
+class _DeepSeekClient:
+    def __init__(self, api_key: str):
+        self.messages = _DeepSeekMessages(api_key)
+
+
 def _make_client():
     backend = os.environ.get("KB_ENRICH_BACKEND", "").strip().lower()
+
+    # DeepSeek 优先（只要有 key 且未强制指定其他 backend）
+    deepseek_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if deepseek_key and backend not in ("sdk", "cli"):
+        return _DeepSeekClient(deepseek_key)
+
+    # Claude CLI
     if backend != "sdk" and shutil.which("claude"):
         return _CLIClient()
+
+    # Anthropic SDK
     try:
         import anthropic  # type: ignore
     except ImportError as exc:
         raise RuntimeError(
-            "未找到 `claude` CLI 且未安装 anthropic SDK。KB_ENRICH 需要至少一个。"
+            "未找到可用 LLM 后端：需要 DEEPSEEK_API_KEY、claude CLI 或 ANTHROPIC_API_KEY 之一。"
         ) from exc
     api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not api_key:
-        raise RuntimeError("KB_ENRICH 需要 `claude` CLI 或 ANTHROPIC_API_KEY。")
+        raise RuntimeError(
+            "未找到可用 LLM 后端：需要 DEEPSEEK_API_KEY、claude CLI 或 ANTHROPIC_API_KEY 之一。"
+        )
     return anthropic.Anthropic(api_key=api_key)
 
 

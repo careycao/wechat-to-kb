@@ -134,7 +134,7 @@ _LOCAL_DOCS_README_CONTENT = """\
 
 每张摘要卡位于 `~/knowledge_base/<KB 名>/<序号-分类>/<标题>.md`，
 顶部 YAML frontmatter 字段说明如下。完整设计见
-`~/knowledge_base/Projects/wechat-to-kb/Designs/20260419-local-pdf-import-design.md`。
+`~/knowledge_base/21-Projects/wechat-to-kb/Designs/20260419-local-pdf-import-design.md`。
 
 ---
 
@@ -201,10 +201,10 @@ _本文件由 tools/import_local_docs.py 首次运行时自动生成；之后不
 
 def _ensure_local_docs_readme(archive_root: Path) -> None:
     """
-    首次运行时在 `~/knowledge_base/Archive/LocalDocs/README.md` 生成就近参考 README。
+    首次运行时在 `~/knowledge_base/33-Archive/LocalDocs/README.md` 生成就近参考 README。
     已存在则不动（尊重用户可能已做的编辑）。
     """
-    # archive_root = ~/knowledge_base/Archive/LocalDocs/imported，所以上一级是 LocalDocs/
+    # archive_root = ~/knowledge_base/33-Archive/LocalDocs/imported，所以上一级是 LocalDocs/
     readme_path = archive_root.parent / "README.md"
     try:
         readme_path.parent.mkdir(parents=True, exist_ok=True)

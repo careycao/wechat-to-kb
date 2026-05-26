@@ -34,10 +34,26 @@
           "isRequired": false
         },
         {
-          "name": "ANTHROPIC_API_KEY",
-          "description": "Optional: API key for AI-powered document value assessment (import_local_file). Not required if Claude Code CLI is installed.",
+          "name": "DEEPSEEK_API_KEY",
+          "description": "Recommended: DeepSeek API key for LLM-powered sub-category routing and enrichment (KB_ROUTE_LLM=1). Cost-effective alternative to Anthropic.",
           "isRequired": false,
           "isSecret": true
+        },
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "description": "Alternative to DEEPSEEK_API_KEY for LLM features. Used if DEEPSEEK_API_KEY is not set.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "KB_ROUTE_LLM",
+          "description": "Set to '1' to enable LLM-powered sub-category routing. Significantly improves accuracy over keyword matching. Requires DEEPSEEK_API_KEY or ANTHROPIC_API_KEY.",
+          "isRequired": false
+        },
+        {
+          "name": "KB_ROUTE_MODEL",
+          "description": "Model to use for sub-category routing (default: deepseek-chat). Use claude-haiku-4-5-20251001 if using Anthropic.",
+          "isRequired": false
         }
       ]
     }
