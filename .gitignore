@@ -64,3 +64,13 @@ scratch/
 .vscode/
 *.swp
 *.swo
+
+# ── Python 工具链缓存（补充）──────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
