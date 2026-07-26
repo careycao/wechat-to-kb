@@ -3,6 +3,8 @@
 <!-- mcp-name: io.github.zima-explorer/wechat-to-kb -->
 
 [![CI](https://github.com/zima-explorer/wechat-to-kb/actions/workflows/ci.yml/badge.svg)](https://github.com/zima-explorer/wechat-to-kb/actions/workflows/ci.yml)
+[![stars](https://img.shields.io/github/stars/zima-explorer/wechat-to-kb?style=flat-square&logo=github)](https://github.com/zima-explorer/wechat-to-kb/stargazers)
+[![forks](https://img.shields.io/github/forks/zima-explorer/wechat-to-kb?style=flat-square)](https://github.com/zima-explorer/wechat-to-kb/network/members)
 [![PyPI](https://img.shields.io/pypi/v/wechat-to-kb.svg)](https://pypi.org/project/wechat-to-kb/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
