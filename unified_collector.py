@@ -16,9 +16,8 @@ REPO_ROOT = Path(__file__).resolve().parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+# cookie 文件默认所在目录（作为 resolve_cookies_path 的 script_dir 参数）
 VIDEO_COLLECTOR_DIR = REPO_ROOT / "video_collector"
-if str(VIDEO_COLLECTOR_DIR) not in sys.path:
-    sys.path.insert(0, str(VIDEO_COLLECTOR_DIR))
 
 from common.kb_config import ALL_KBS, KB_BY_KEY, warn_if_using_default_config
 from common.kb_indexing import rebuild_index
@@ -26,9 +25,9 @@ from common.kb_routing import llm_route_category, llm_route_kb, pick_highest_sco
 from common.kb_storage import KBWriter, delete_from_all_kbs
 from common.path_utils import load_urls_from_file, redact_url_for_log, sanitize_url_input
 from common.text_processing import extract_keywords_for_index
-from cookies import resolve_cookies_path
-from platforms import fetch_video
-from video_types import format_plain, html_fragment_for_kb
+from video_collector.cookies import resolve_cookies_path
+from video_collector.platforms import fetch_video
+from video_collector.video_types import format_plain, html_fragment_for_kb
 from web_collector.page_fetcher import PageFetcher
 from wechat_collector.article_fetcher import ArticleFetcher, login_wechat_session
 

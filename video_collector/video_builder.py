@@ -30,9 +30,9 @@ from common.kb_indexing import rebuild_index
 from common.kb_routing import prompt_user_choice, route, score_kb as score_kb_one
 from common.kb_storage import KBWriter
 from common.path_utils import load_urls_from_file
-from cookies import resolve_cookies_path
-from platforms import fetch_video
-from video_types import format_plain, html_fragment_for_kb
+from video_collector.cookies import resolve_cookies_path
+from video_collector.platforms import fetch_video
+from video_collector.video_types import format_plain, html_fragment_for_kb
 
 logging.basicConfig(
     level=logging.INFO,

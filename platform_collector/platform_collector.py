@@ -42,7 +42,7 @@ REPO_ROOT  = SCRIPT_DIR.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from autocli_fetcher import fetch_task, get_kb_hint, list_tasks
+from platform_collector.autocli_fetcher import fetch_task, get_kb_hint, list_tasks
 
 from common.kb_config import ALL_KBS, KB_BY_KEY, warn_if_using_default_config
 from common.kb_indexing import rebuild_index

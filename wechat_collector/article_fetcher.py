@@ -288,32 +288,34 @@ class ArticleFetcher:
 
 
 async def login_wechat_session(state_path: Path | None = None) -> None:
-    """打开有头浏览器，引导用户扫码登录微信，完成后保存 session。"""
+    """打开有头浏览器，让用户手动在浏览器内登录微信并保存 session。
+
+    注意：本向导不会自动弹出二维码；mp.weixin.qq.com 文章页通常没有
+    读者登录入口，因此只能保存浏览器访客态，无法解锁付费文章全文。
+    """
     from playwright.async_api import async_playwright
 
     target_path = state_path or ensure_wechat_state_migrated()
 
     # 打开普通公开文章，页面可正常加载，方便用户确认浏览器环境正常
     # 付费文章解锁的浏览器登录入口尚未找到，session 对普通文章已够用
-    LOGIN_ENTRY = "https://mp.weixin.qq.com/s/uqhVqYkhAJR9VBo3ul558A"
+    LOGIN_ENTRY = "https://mp.weixin.qq.com/s/pjqLvZ9qiDzvLQE5cffYrg"
 
     print("=" * 55)
     print("  微信 Session 登录向导（实验性）")
     print("=" * 55)
     print()
-    print("⚠️  注意：微信付费文章的浏览器读者登录入口尚未完全确认")
+    print("⚠️  注意：本向导只保存浏览器访客态 cookie，不弹二维码，")
+    print("      也无法解锁付费文章（付费解锁依赖微信 App 内购买账号）。")
     print()
     print("即将打开 Chrome 浏览器窗口...")
     print()
     print("操作步骤：")
-    print("  1. 等待浏览器打开测试付费文章")
-    print("  2. 尝试在页面中找到「登录」或扫码入口并登录")
-    print("     （用购买了付费文章的微信账号）")
-    print("  3. 登录后确认可以看到付费文章全文")
-    print("  4. 回到此终端，按回车键保存 session")
-    print()
-    print("  如果页面没有登录入口，可在地址栏手动访问其他")
-    print("  微信登录页面，完成后再回来按回车。")
+    print("  1. 浏览器会打开一篇公众号文章（当前为公开文，无需登录即可阅读）")
+    print("  2. 本向导不会显示二维码；如要登录请自行在页面内完成")
+    print("     （公众号文章页通常没有读者登录入口，属正常现象）")
+    print("  3. 确认浏览器状态后，回到本终端按回车保存 session")
+    print("  4. 保存的仅是访客态，对付费文章无效")
     print()
 
     async with async_playwright() as p:

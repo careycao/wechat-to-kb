@@ -45,9 +45,9 @@ def _try_enhance_video_note(post: dict) -> dict:
     if not post.get("is_video"):
         return post
     try:
-        from cookies import resolve_cookies_path
-        from platforms import fetch_video
-        from video_types import format_plain
+        from video_collector.cookies import resolve_cookies_path
+        from video_collector.platforms import fetch_video
+        from video_collector.video_types import format_plain
     except ImportError as e:
         logger.warning("无法加载 video_collector，跳过视频增强: %s", e)
         return post

@@ -36,7 +36,7 @@ REPO_ROOT  = SCRIPT_DIR.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from autocli_fetcher import list_tasks, TASK_REGISTRY
+from platform_collector.autocli_fetcher import list_tasks, TASK_REGISTRY
 
 logging.basicConfig(
     level=logging.INFO,
@@ -283,7 +283,7 @@ def build_digest(
 
 def _get_items_for_task(task: str, limit: int = 20) -> list[dict]:
     """直接从 DIRECT_API 或 autocli 获取条目列表（不经过 snapshot 格式化）。"""
-    from autocli_fetcher import DIRECT_API, TASK_REGISTRY, _run_autocli, _parse_items
+    from platform_collector.autocli_fetcher import DIRECT_API, TASK_REGISTRY, _run_autocli, _parse_items
 
     if task in DIRECT_API:
         items = DIRECT_API[task](limit)
