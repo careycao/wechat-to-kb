@@ -1,8 +1,8 @@
 # wechat-to-kb MCP Server
 
-采集和管理本地知识库。支持"只读不存"和"读取并入库"两种模式。
+精简版 MCP，只保留高频的"只读不存"和"单篇入库"两种模式。
 
-在 Claude Desktop、Cursor、Cowork 等任何支持 MCP 的 AI 工具中直接说：
+在 Codex、WorkBuddy、Claude Desktop 等任何支持 MCP 的 AI 工具中直接说：
 
 > "帮我读一下这篇文章 https://mp.weixin.qq.com/s/xxxxx"（只读）
 > "帮我把这篇文章存到知识库 https://mp.weixin.qq.com/s/xxxxx"（入库）
@@ -15,10 +15,11 @@
 |------|------|
 | `fetch_url` | **只读**：抓取公众号文章或网页正文并返回，不保存到知识库 |
 | `save_url` | 保存公众号文章、网页、视频（自动识别类型） |
-| `save_urls_batch` | 批量保存多个链接 |
-| `import_local_file` | 导入本地 PDF / PPTX / DOCX |
-| `list_knowledge_bases` | 查看已配置的知识库和分类 |
-| `rebuild_index` | 重建知识库索引文件 |
+
+低频能力不再暴露为 MCP 工具：
+
+- 批量保存 / 重建索引：使用根目录 `./run.sh`
+- 本地 PDF / PPTX / DOCX 导入：使用根目录 `./run_import_local_docs.sh`
 
 ---
 
@@ -107,15 +108,15 @@ uvx --from wechat-to-kb wechat-to-kb-mcp
 读一下这篇文章，总结要点：https://mp.weixin.qq.com/s/xxxxx
 
 保存这篇文章到知识库：https://mp.weixin.qq.com/s/xxxxx
+```
 
-把这几篇文章都存一下：
-- https://mp.weixin.qq.com/s/aaaaa
-- https://example.com/article
-- https://www.bilibili.com/video/BVxxxxx
+低频操作请在项目根目录用终端脚本：
 
-帮我导入 ~/Downloads/行业报告.pdf 到知识库
-
-列出我的知识库有哪些分类
+```bash
+./run.sh https://mp.weixin.qq.com/s/aaaaa https://example.com/article
+./run.sh -f urls.txt
+./run.sh --reindex
+./run_import_local_docs.sh --file ~/Downloads/行业报告.pdf
 ```
 
 ---

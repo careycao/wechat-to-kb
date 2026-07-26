@@ -8,6 +8,7 @@ import asyncio
 import logging
 import os
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -119,6 +120,23 @@ def _resolve_auto_route(args: argparse.Namespace) -> bool:
     return not sys.stdin.isatty()
 
 
+@dataclass
+class SaveResult:
+    """单条 URL 的入库结果，供程序化调用方（如 MCP Server）判断成败。"""
+
+    url: str
+    status: str  # saved | skipped | empty | failed
+    title: str = ""
+    kb: str = ""
+    category: str = ""
+    keywords: str = ""
+    error: str = ""
+
+    @property
+    def ok(self) -> bool:
+        return self.status in ("saved", "skipped")
+
+
 async def run_urls(
     urls: list[str],
     kb_hint: str | None = None,
@@ -126,9 +144,10 @@ async def run_urls(
     auto_route: bool = False,
     include_comments: bool = False,
     comments_limit: int = 30,
-) -> None:
+) -> list[SaveResult]:
     writers = {kb.key: KBWriter(kb) for kb in ALL_KBS}
     changed_kbs: set[str] = set()
+    results: list[SaveResult] = []
     wechat_fetcher: ArticleFetcher | None = None
     web_fetcher: PageFetcher | None = None
 
@@ -166,6 +185,7 @@ async def run_urls(
                     data = await web_fetcher.fetch(url)
 
                 if not data:
+                    results.append(SaveResult(url=url, status="empty"))
                     continue
 
                 title = data["title"]
@@ -216,6 +236,7 @@ async def run_urls(
                 kb = KB_BY_KEY[kb_key]
                 if skip_existing and writer.already_exists(title, url=data.get("url", "")):
                     print(f"已存在，跳过：{title[:60]}")
+                    results.append(SaveResult(url=url, status="skipped", title=title, kb=kb.name))
                     continue
 
                 writer.save_stage(data)
@@ -232,8 +253,19 @@ async def run_urls(
                 print(f"• 分类： {prefixed}")
                 print(f"• 核心关键词： {keywords}")
                 print(f"已同步更新知识库索引。后续可以在 {save_path} 下找到原文 MD/HTML 版本。\n")
-            except Exception:
+                results.append(
+                    SaveResult(
+                        url=url,
+                        status="saved",
+                        title=title,
+                        kb=kb.name,
+                        category=prefixed,
+                        keywords=keywords,
+                    )
+                )
+            except Exception as exc:
                 logger.exception("处理出错: %s", redact_url_for_log(url))
+                results.append(SaveResult(url=url, status="failed", error=str(exc)))
     finally:
         if wechat_fetcher is not None:
             await wechat_fetcher.close()
@@ -242,6 +274,8 @@ async def run_urls(
 
     for kb_key in changed_kbs:
         rebuild_index(KB_BY_KEY[kb_key])
+
+    return results
 
 
 def main() -> None:

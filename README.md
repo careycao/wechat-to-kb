@@ -1,24 +1,54 @@
 # wechat-to-kb
 
-<!-- mcp-name: io.github.careycao/wechat-to-kb -->
+<!-- mcp-name: io.github.zima-explorer/wechat-to-kb -->
+
+[![CI](https://github.com/zima-explorer/wechat-to-kb/actions/workflows/ci.yml/badge.svg)](https://github.com/zima-explorer/wechat-to-kb/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/wechat-to-kb.svg)](https://pypi.org/project/wechat-to-kb/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > 把微信公众号、网页、视频、小红书、RSS 统一沉淀为本地知识库，随时供 AI 检索与问答。
 
----
+信息不缺，缺的是**能被 AI 稳定读到**的那一份。公众号读完就忘、视频看完即逝、有道云几千篇笔记锁在封闭平台、硬盘里的 PDF/PPTX 从没被整理——表面看知识在积累，实际 AI 能调用的只是冰山一角。wechat-to-kb 把这些统一路由进本地知识库，变成结构化、可检索、可供 AI 问答的知识资产。
 
-## 为什么做这个
+## 30 秒上手
 
-信息不是不够多，而是太散、太难被再次用上。
+```bash
+# 无需 clone，直接跑 MCP Server（推荐）
+uvx --from 'wechat-to-kb[mcp]' wechat-to-kb-mcp
 
-公众号文章读完就忘，收藏了也找不到；B 站视频、小红书笔记看完即逝；RSS 订阅堆了几十个源，根本看不完。这是新内容的问题。
+# 或 clone 后用终端入口保存第一篇
+git clone https://github.com/zima-explorer/wechat-to-kb.git ~/DevProjects/wechat-to-kb
+cd ~/DevProjects/wechat-to-kb
+./run.sh "https://mp.weixin.qq.com/s/xxxxx"
+```
+
+配好 MCP 后，在 Claude app / WorkBuddy / Codex / Cursor 等任意 MCP 客户端里直接说「帮我把这篇文章存到知识库 <链接>」即可。详见 [MCP Server](#mcp-server推荐新用户) 章节。
+
+## 架构一览
+
+```mermaid
+flowchart LR
+    A["链接 / 本地文件"] --> B{run.sh 统一入口<br/>或 MCP save_url}
+    B -->|mp.weixin| C[wechat_collector]
+    B -->|B站/YT/小红书| D[video_collector]
+    B -->|普通网页| E[web_collector]
+    B -->|本地 PDF| F[import_local_docs]
+    C & D & E & F --> G["common<br/>路由 + LLM 增强 + 落盘 + 索引"]
+    G --> H[("本地知识库<br/>.md / .html + README 索引")]
+    H --> I["AI 工具<br/>Cursor / Obsidian / RAG"]
+```
+
+<details>
+<summary><b>为什么做这个（展开）</b></summary>
+
+信息不是不够多，而是太散、太难被再次用上。公众号文章读完就忘，收藏了也找不到；B 站视频、小红书笔记看完即逝；RSS 订阅堆了几十个源，根本看不完。这是新内容的问题。
 
 旧内容更难处理：有道云这类第三方云笔记用了多年、积累了几千篇，却被锁在封闭平台里，AI 完全读不到；本地硬盘里堆了大量 PDF、PPTX、DOCX——培训资料、峰会分享、行业报告，睡在那里从没被系统整理过。
 
-**表面看知识在积累，实际上 AI 能调用的只是冰山一角。**
-
-wechat-to-kb 的目标是把这些全部打通：公众号、全网网页、视频（B 站 / YouTube / 小红书视频号）、RSS 订阅、有道云历史笔记、本地 PDF / PPTX / DOCX，统一路由到本地知识库，变成结构化、可检索、可供 AI 问答的知识资产。
-
 工具和模型都在快速迭代，但**把自己真正有价值的历史积累释放出来、让 AI 能稳定读到**，是 AI 时代绕不过去的个人基础建设。
+
+</details>
 
 ---
 
@@ -27,7 +57,7 @@ wechat-to-kb 的目标是把这些全部打通：公众号、全网网页、视�
 | 模块 | 功能 |
 |---|---|
 | `run.sh` | 顶层统一入口，聊天工具只接这一条，内部自动分流到公众号 / 视频 / 网页 |
-| `mcp_server` | **MCP Server**，让 Claude Desktop / Cursor 等任意 MCP 客户端直接调用，无需终端 |
+| `mcp_server` | **MCP Server**，让 Claude app / WorkBuddy / Codex / Cursor 等任意 MCP 客户端直接调用，无需终端 |
 | `wechat_collector` | 公众号文章采集，管理微信登录态，保留评论 PoC 能力 |
 | `web_collector` | 普通网页采集，自动路由到对应知识库 |
 | `common` | 全仓库共享的知识库配置、路由、落盘、索引与文本处理层 |
@@ -77,7 +107,9 @@ related:
 
 ## MCP Server（推荐新用户）
 
-在 Claude Desktop、Cursor、Cowork 等任何支持 MCP 的 AI 工具里，直接对话就能保存内容，无需配置终端工具。
+在 Claude app、WorkBuddy、Codex、Cursor 等任何支持 MCP 的 AI 工具里，直接对话就能读文章或保存单篇内容，无需配置终端工具。
+
+MCP 只保留高频能力：`fetch_url`（只读）和 `save_url`（单篇入库）。批量保存、重建索引、本地文档导入继续使用根目录终端脚本。
 
 ### 安装
 
@@ -139,12 +171,20 @@ DEEPSEEK_API_KEY = "你的DeepSeek Key"
 重启后，在对话中直接说：
 
 ```
+帮我读一下这篇文章：https://mp.weixin.qq.com/s/xxxxx
 帮我把这篇文章存到知识库：https://mp.weixin.qq.com/s/xxxxx
-列出我的知识库有哪些分类
-帮我导入 ~/Downloads/行业报告.pdf 到知识库
 ```
 
-提供的工具：`fetch_url`（只读）/ `save_url` / `save_urls_batch` / `import_local_file` / `list_knowledge_bases` / `rebuild_index`
+提供的 MCP 工具：`fetch_url`（只读）/ `save_url`（单篇入库）
+
+低频操作请走终端脚本：
+
+```bash
+./run.sh https://mp.weixin.qq.com/s/aaaaa https://example.com/article
+./run.sh -f urls.txt
+./run.sh --reindex
+./run_import_local_docs.sh --file ~/Downloads/行业报告.pdf
+```
 
 详细说明见 [mcp_server/README.md](mcp_server/README.md)。
 
@@ -156,7 +196,7 @@ DEEPSEEK_API_KEY = "你的DeepSeek Key"
 
 ### 方式一：MCP Server（推荐，见上方章节）
 
-Claude Desktop / Cursor 等支持 MCP 的工具直接调用，无需终端，见上方"MCP Server"章节。
+Claude app / WorkBuddy / Codex / Cursor 等支持 MCP 的工具直接调用，无需终端，见上方"MCP Server"章节。
 
 ### 方式二：在 AI 助手对话里（OpenClaw / 飞书）
 
@@ -213,12 +253,15 @@ cd ~/DevProjects/wechat-to-kb
 
 ## 接入 OpenClaw
 
+<details>
+<summary><b>展开 OpenClaw 完整接入步骤（5 步）</b></summary>
+
 如果你使用 [OpenClaw](https://openclaw.ai)，按以下步骤配置后，可以直接在对话框说"帮我保存这个链接"，无需打开终端。
 
 ### 1. clone 到项目目录，并保留 OpenClaw 入口
 
 ```bash
-git clone https://github.com/careycao/wechat-to-kb.git ~/DevProjects/wechat-to-kb
+git clone https://github.com/zima-explorer/wechat-to-kb.git ~/DevProjects/wechat-to-kb
 ln -s ~/DevProjects/wechat-to-kb ~/.openclaw/wechat-to-kb
 ```
 
@@ -264,6 +307,8 @@ cd ~/.openclaw/wechat-to-kb
 
 如果你刚更新过 OpenClaw 的工具配置，建议直接开一个新会话再试，避免旧会话继续沿用缓存指令。
 
+</details>
+
 ---
 
 ## 快速开始
@@ -271,7 +316,7 @@ cd ~/.openclaw/wechat-to-kb
 ### 1. 配置仓库
 
 ```bash
-git clone git@github.com:careycao/wechat-to-kb.git
+git clone git@github.com:zima-explorer/wechat-to-kb.git
 cd wechat-to-kb
 cp common/kb_config.example.py common/kb_config.local.py
 # 编辑 kb_config.local.py，设置你的知识库根目录
@@ -289,6 +334,9 @@ cd ~/DevProjects/wechat-to-kb
 ---
 
 ## 各模块使用
+
+<details>
+<summary><b>展开各模块命令行详细用法</b></summary>
 
 ### 顶层统一入口（推荐给聊天工具 / 飞书 / OpenClaw）
 
@@ -466,6 +514,8 @@ echo 'DEEPSEEK_API_KEY=你的key' >> ~/DevProjects/wechat-to-kb/.env
 **报告**：默认输出到 `~/knowledge_base/Archive/LocalDocs/reports/`（文件名含日期与来源目录名），分四段（已入库 / 待确认 / 低价值 / 去重）。
 
 **字段速查**：首次运行会在 `~/knowledge_base/Archive/LocalDocs/README.md` 自动生成 frontmatter 字段说明，方便在 KB 里就近查阅。完整设计见 `Designs/20260419-local-pdf-import-design.md`（v1.2）。
+
+</details>
 
 ---
 

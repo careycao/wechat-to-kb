@@ -1,10 +1,10 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.careycao/wechat-to-kb",
+  "name": "io.github.zima-explorer/wechat-to-kb",
   "title": "wechat-to-kb",
-  "description": "Save WeChat articles, web pages, videos (Bilibili, YouTube, TikTok, etc.) and local documents (PDF/DOCX/PPTX) to a local knowledge base with auto-routing and AI-powered categorization. Ideal for researchers, content creators, and RAG/LLM workflows.",
+  "description": "Read URL content or save a single WeChat article, web page, or video URL to a local knowledge base with auto-routing and optional AI-powered categorization. The MCP surface is intentionally small for daily assistant use.",
   "repository": {
-    "url": "https://github.com/careycao/wechat-to-kb",
+    "url": "https://github.com/zima-explorer/wechat-to-kb",
     "source": "github"
   },
   "version_detail": {

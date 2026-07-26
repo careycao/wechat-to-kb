@@ -73,11 +73,12 @@ class KBEnricherInjectTest(unittest.TestCase):
         self.assertIn("  - 概念A", result)
         self.assertIn("  - 概念B", result)
 
-    def test_injects_related_as_yaml_list(self):
+    def test_injects_related_as_wikilink_yaml_list(self):
+        # related 字段以 [[wikilink]] 形式写入，兼容 Obsidian Graph View
         md = "---\ntitle: 测试\n---\n\n# 正文"
         result = _inject_enrichment(md, {"related": ["文章1", "文章2"]})
-        self.assertIn("  - 文章1", result)
-        self.assertIn("  - 文章2", result)
+        self.assertIn('  - "[[文章1]]"', result)
+        self.assertIn('  - "[[文章2]]"', result)
 
     def test_empty_enrichment_returns_original(self):
         md = "---\ntitle: 测试\n---\n\n# 正文"
